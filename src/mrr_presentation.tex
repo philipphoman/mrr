@@ -1,0 +1,68 @@
+% Created 2018-09-18 Tue 14:44
+% Intended LaTeX compiler: pdflatex
+\documentclass[aspectratio=169, bigger]{beamer}
+	         \usetheme{feinstein}
+	         \usepackage[authoryear]{natbib}
+
+
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{fontspec}
+\usepackage{textpos}
+\usepackage{bibentry}
+\graphicspath{{../../../output/figures/}{../../../ext/logos/}}
+\newcommand{\auth}{Philipp Homan, MD, PhD}
+\newcommand{\authemail}{phoman1@northwell.edu}
+\newcommand{\authtwitter}{@philipphoman}
+\newcommand{\authgithub}{github.com/philipphoman}
+\author{Philipp Homan\inst{1,2,3}, MD, PhD}
+\institute[shortinst]{\inst{1} Donald and
+Barbara Zucker School of Medicine
+at Northwell/Hofstra, NY, USA
+\and \inst{2} Feinstein Institute for Medical
+Research, Manhasset, NY, USA \and
+\inst{3} Zucker Hillside Hospital, NY, USA\\
+\footnotesize\vspace{5mm}
+\url{phoman1@northwell.edu}\\
+\url{http://github.com/philipphoman}}
+\usetheme{default}
+\date{}
+\title{Making research reproducible: git, R and org-mode}
+\begin{document}
+
+\maketitle
+
+\clearpage
+
+\begin{frame}[label={sec:org5cc61bb}]{Why do we even care?}
+It's not reproducible if it only runs on your laptop!
+
+(\url{http://www.jonzelner.net/docker/reproducibility/})
+\end{frame}
+
+\begin{frame}[label={sec:orgdb4831c}]{We are faced with a replication crisis}
+\begin{columns}
+\begin{column}[t]{0.5\columnwidth}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{mrr_occ2015.pdf}
+\end{center}
+\center
+\tiny
+Open Science Collaboration 2015, Science
+\end{column}
+
+\begin{column}[t]{0.5\columnwidth}
+\begin{itemize}
+\item Ongoing methodological crisis in science
+\item Results of many scientific studies difficult to replicate
+\item Involves diverse fields (from psychology to cancer research)
+\end{itemize}
+
+\center
+\tiny
+Ioannidis 2005, PLOS Med
+\end{column}
+\end{columns}
+\end{frame}
+\end{document}

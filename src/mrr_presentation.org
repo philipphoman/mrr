@@ -1,0 +1,479 @@
+#+STARTUP: beamer
+#+TITLE: Making research reproducible: git, R and org-mode
+* Preamble                                                      :ignore:
+** Comments                                                     :ignore:
+# ----------------------------------------------------------------------
+# - Turn on synonyms by starting synosaurus-mode
+# - Look up words using C-c sr
+# - Turn on dictionary by starting flyspell-mode
+# - Count words by section using org-wc-display
+# ----------------------------------------------------------------------
+** org specific settings                                        :ignore:
+# ----------------------------------------------------------------------
+#+OPTIONS: email:nil toc:nil num:nil title:t author:nil date:nil tex:t 
+#+STARTUP: align fold logdone
+#+SEQ_TODO: TODO(t) 
+#+TAGS: figure(f) check(c) noexport(n) ignore(i)
+#+LANGUAGE: en
+#+EXCLUDE_TAGS: noexport TODO
+# ----------------------------------------------------------------------
+** Latex header                                                 :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_CLASS:  mybeamerfeinstein
+#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{setspace}
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{fontspec}
+#+LATEX_HEADER: \usepackage{textpos}
+#+LATEX_HEADER: \usepackage{bibentry}
+#+LATEX_HEADER: \graphicspath{{../../../output/figures/}{../../../ext/logos/}}
+# LATEX_HEADER: \graphicspath{{../../../ext/logos/}}
+# ----------------------------------------------------------------------
+** Latex macros                                               :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_HEADER: \newcommand{\auth}{Philipp Homan, MD, PhD}
+#+LATEX_HEADER: \newcommand{\authemail}{phoman1@northwell.edu}
+#+LATEX_HEADER: \newcommand{\authtwitter}{@philipphoman}
+#+LATEX_HEADER: \newcommand{\authgithub}{github.com/philipphoman}
+# ----------------------------------------------------------------------
+** Beamer-specific header                                       :ignore:
+# ----------------------------------------------------------------------
+#+LaTeX_CLASS_OPTIONS: [aspectratio=169, bigger]
+# ----------------------------------------------------------------------
+** Authors and affiliations                                     :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_HEADER: \author{Philipp Homan\inst{1,2,3}, MD, PhD}
+#+LATEX_HEADER: \institute[shortinst]{\inst{1} Donald and  
+#+LATEX_HEADER: Barbara Zucker School of Medicine 
+#+LATEX_HEADER: at Northwell/Hofstra, NY, USA
+#+LATEX_HEADER: \and \inst{2} Feinstein Institute for Medical 
+#+LATEX_HEADER: Research, Manhasset, NY, USA \and
+#+LATEX_HEADER: \inst{3} Zucker Hillside Hospital, NY, USA\\ 
+#+LATEX_HEADER: \footnotesize\vspace{5mm}
+#+LATEX_HEADER: \url{phoman1@northwell.edu}\\
+#+LATEX_HEADER: \url{http://github.com/philipphoman}}
+# ----------------------------------------------------------------------
+
+** Buffer-wide source code blocks                             :ignore:
+# ----------------------------------------------------------------------
+# Set elisp variables need for nice formatting We want no new lines in
+# inline results and a paragraph size of 80 characters Important: this
+# has to be evaluated witch C-c C-c in order to work in the current
+# buffer
+#+BEGIN_SRC emacs-lisp :exports none :results silent
+
+; set timestamp format
+;(setq org-export-date-timestamp-format "%ft%t%z")
+(require 'org-wc)
+(flyspell-mode t)
+(synosaurus-mode t)
+(auto-complete-mode t)
+(linum-mode t)
+(whitespace-mode t)
+(setq org-babel-inline-result-wrap "%s")
+(setq org-export-with-broken-links "mark")
+(setq fill-column 72)
+(setq whitespace-line-column 72)
+;(setq org-latex-caption-above '(table image))
+(setq org-latex-caption-above nil)
+(org-toggle-link-display)
+; don't remove logfiles at export
+(setq org-latex-remove-logfiles nil)
+
+; keybindings
+; (global-set-key (kbd "<f7> c") "#+CAPTION: ")
+(defun setfillcolumn72 ()
+	(interactive)
+	(setq fill-column 72)
+)
+
+(defun setfillcolumn42 ()
+	(interactive)
+	(setq fill-column 42)
+)
+(define-key org-mode-map (kbd "C-c #") "#+CAPTION: ")
+(define-key org-mode-map (kbd "C-c f c 4 2") 'setfillcolumn42)
+(define-key org-mode-map (kbd "C-c f c 7 2") 'setfillcolumn72)
+
+(setq org-odt-category-map-alist
+	 '(("__figure__" "*figure*" "value" "figure" org-odt--enumerable-image-p)))
+
+; let ess not ask for starting directory
+(setq ess-ask-for-ess-directory nil)
+
+;(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex
+;-output-directory=../output/tex/ -interaction nonstopmode' -pdf
+;-bibtex -f %f"))
+
+;(setq org-latex-pdf-process '("latexmk -pdf 
+;	-pdflatex='xelatex -shell-escape -interaction nonstopmode' -bibtex -f %f "))
+(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
+
+(setq org-latex-logfiles-extensions 
+	 (quote("bcf" "blg" "fdb_latexmk" "fls" 
+	 "figlist" "idx" "log" "nav" "out" "ptc" 
+	 "run.xml" "snm" "toc" "vrb" "xdv")))
+
+(add-to-list 'org-structure-template-alist
+ '("ca" "#+CAPTION: "))
+
+(add-to-list 'org-structure-template-alist
+ '("he" "#+LATEX_HEADER: "))
+
+(add-to-list 'org-structure-template-alist
+ '("dc" "src_R[:session]{}"))
+
+(add-to-list 'org-structure-template-alist
+ '("sr" "#+HEADER: :exports none
+,#+BEGIN_SRC R :colnames yes :results silent :session\n")) 
+
+(add-to-list 'org-structure-template-alist
+ '("er" "#+END_SRC"))
+ 
+(setq attrlatex "#+ATTR_LATEX: :width 1.0")
+
+(define-key org-mode-map (kbd "C-c #") attrlatex)
+
+
+(add-to-list 'org-structure-template-alist
+	'("cl" "\n** Left\n:PROPERTIES: ?\n:BEAMER_col: 0.5 \n:END:"))
+
+(add-to-list 'org-structure-template-alist
+	'("cr" "\n** Right\n:PROPERTIES: ?\n:BEAMER_col: 0.5 \n:END:"))
+
+(add-to-list 'org-structure-template-alist
+	'("im" "#+ATTR_LATEX: :width 1.0\\textwidth \n[[file:"))
+
+(add-to-list 'org-structure-template-alist
+	'("qt" "\\center \n\\tiny\n"))
+
+
+
+
+#+END_SRC
+# ----------------------------------------------------------------------
+# End preamble
+# ----------------------------------------------------------------------
+# Start with doublespacing 
+\clearpage
+
+* Why should we even care? 
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+#if (grepl("Zurich2018", getwd())) { 
+#  setwd("../../../src/")
+# load fe data to obtain slopes
+#-----------------------------------------------------------------------
+source("mrr_load.R")
+#+END_SRC
+
+It's not reproducible if it only runs on your laptop!
+
+(http://www.jonzelner.net/docker/reproducibility/)
+
+* We are faced with a replication crisis
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 0.8\textwidth
+[[file:mrr_occ2015.pdf]]
+\center
+\tiny
+Open Science Collaboration 2015, Science
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+- Ongoing methodological crisis in science
+- Results of many scientific studies difficult to replicate
+- Involves diverse fields (from psychology to cancer research)
+	
+\center
+\tiny
+Ioannidis 2005, PLOS Med
+
+* Replicating vs. reproducing 
+- Replicating: People going out and collecting new data
+- Reproducing: People analyzing the same data
+- It turns out that what cannot be replicated may also be
+  difficult to be reproduced
+
+* We are probably also faced with a reproducibility crisis 
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 0.8\textwidth
+[[file:mrr_economist2015.pdf]]
+\center
+\tiny
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:mrr_baker2016.pdf]]
+\center
+\tiny
+Baker 2016, Nature
+
+* Why is it so hard to reproduce our own work?
+We don't use standardized work flows
+
+* What does that mean?
+- We use intuition when we organize data, manuscripts, code
+- The same goes for analyzing data
+- After a couple of months (sometimes weeks) it is hard to remember:
+  1. What we did
+	2. Why we did it
+	3. How we did it
+
+* What can we do about it?
+Three rules:
+- Separate data from analysis
+- Use version control
+- Use code to analyze data (not GUIs)
+	
+* Separating data from analysis
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:mrr_example2018.pdf]]
+
+* Separating data from analysis
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:mrr_example2018a.pdf]]
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+- We want one and only one data set to work with
+- Once finalized (cleaned etc.), it is never touched again
+- Any analysis reads from but never writes to this data set
+	
+* Use a version control system (= use git)
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:mrr_example2018b.pdf]]
+\center
+\tiny
+https://www.quora.com/
+
+* What is git and why should I use it?
+- Version control system for source code management
+- Tracks every file in a project
+- Keeps track of any change to any file
+
+* Making research reproducible
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:fe_iw2018_senn2003.pdf]]
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 0.3\textwidth 
+[[file:fe_iw2018_senn2003a.pdf]]
+
+* Essential ingredients
+- Mister K., 24 year old car mechanic from Nassau County, NY
+- Psychotic symptoms with delusions and suspiciousness
+- Duration of untreated psychosis: about 1 year 
+- 07.01.2014: Admission to psychiatric hospital
+
+* A modularized approach
+Question: which medication is likely to work?
+
+* Version control
+** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: 
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+[[file:fe_iw2018_festudy_grid9333.pdf]]
+
+** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+- Trajectory of a 12 week treatment 
+- Medication: risperidone 1-6 mg 
+	
+* Code-based instead of GUI-based stats
+- Mister L., *1991, high school graduate from Queens, NYC
+- Paranoid ideas  
+- Untreated psychosis for about 4 years 
+- 23.08.2011: Admission
+	
+* Another vignette
+** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+[[file:fe_iw2018_festudy_grid9618.pdf]]
+
+** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+- Trajectory of a 12 week treatment 
+- Medication: Aripiprazole 5-15 mg 
+	
+* Using markup to write text and code 
+What do we learn from the two clinical vignettes?
+
+* Using Make to build whole projects 
+- Mister K. responded to the treatment, Mister L. didn't?
+- Risperidone was helpful, aripiprazole wasn't?
+
+* Outline
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of the human brain
+
+#+ATTR_LATEX: :width 0.8\textwidth
+[[file:fe_iw2018_bassett2015a.pdf]]
+# [[file:fe_grid9333.pdf]]
+\center
+\tiny
+Image credit: Dani Bassett, PhD, U Penn
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of treatment response
+
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:fe_iw2018_nature2014.pdf]]
+
+* Conclusion
+- We need to be careful with dichotomizing patients
+- Put enough effort in modeling response
+- Partial pooling to exploit full information and apply shrinkage
+* Outlook
+\usebeamerfont{acknowledgments}
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Real-world indiv. differences in treatment outcome:
+- Nation-wide electronic database from Finland 
+-	All individuals 16 to 64 years in 2006 who received a diagnosis of
+  schizophrenia during a period of 8 years (prevalent cohort)
+- Repeated episodes on and off drugs
+- Collaboration with Karolinska Inst. (Jari Tiihonen)
+
+** Right 
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Relapse prevention through digital health assistance:
+- Multi-site study (10 centers, 342 patients)
+- Technology-enhanced relapse prevention: Smartphone Intervention,
+  Computerized CBT, Daily Support Website, Prescriber Decision Support
+  System
+- Results: Reduction of 4 days in re-hosp. compared to standard care
+  (Homan, ..., Ben-Zeev, Robinson, Kane, in prep)
+
+* Acknowledgments
+# \footnotesize
+\usebeamerfont{acknowledgments}
+\singlespacing
+** Left
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+*Mount Sinai School of Medicine* \\
+-Daniela Schiller \\
+-Roger Clem \\
+
+\vspace{2mm}
+
+*Feinstein Institute and Zucker Hillside Hospital* \\
+-Stephanie Winkelbeiner \\
+-Anil Malhotra \\
+-Delbert Robinson \\
+-John Kane \\
+
+\vspace{2mm}
+
+*University of Berne* \\
+-Werner Strik \\
+-Thomas Dierks \\
+
+\vspace{2mm}
+
+*Karolinska Institutet* \\
+-Jari Tiihonen \\
+
+\vspace{2mm}
+
+** Right 
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+*University of Melbourne* \\
+-Marialuisa Cavelti \\
+
+\vspace{2mm}
+
+*University of Edinburgh* \\
+-David Carmel \\
+
+\vspace{2mm}
+
+*TU Munich* \\
+-Stefan Leucht \\
+
+\vspace{2mm}
+
+*Yale University* \\
+-Ifat Levy \\
+-Ilan Harpaz-Rotem \\
+-John Krystal \\
+
+\vspace{2mm}
+
+*NYU* \\
+-Candace Raio \\
+-Yaacov Trope \\
+
+* References                                                    :ignore:
+\bibliographystyle{npp}
+\nobibliography{master} 

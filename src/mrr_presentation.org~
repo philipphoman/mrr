@@ -1,0 +1,937 @@
+#+STARTUP: beamer
+#+TITLE: On the challenges of predicting treatment response
+#+TITLE: in schizophrenia
+* Preamble                                                      :ignore:
+** Comments                                                     :ignore:
+# ----------------------------------------------------------------------
+# - Turn on synonyms by starting synosaurus-mode
+# - Look up words using C-c sr
+# - Turn on dictionary by starting flyspell-mode
+# - Count words by section using org-wc-display
+# ----------------------------------------------------------------------
+** org specific settings                                        :ignore:
+# ----------------------------------------------------------------------
+#+OPTIONS: email:nil toc:nil num:nil title:t author:nil date:nil tex:t 
+#+STARTUP: align fold logdone
+#+SEQ_TODO: TODO(t) INPROGRESS(i) WAITING(w) | DONE(d) CANCELED(c)
+#+TAGS: figure(f) check(c) noexport(n) ignore(i)
+#+LANGUAGE: en
+#+EXCLUDE_TAGS: noexport TODO
+# ----------------------------------------------------------------------
+** Latex header                                                 :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_CLASS:  mybeamerfeinstein
+#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{setspace}
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{fontspec}
+#+LATEX_HEADER: \usepackage{textpos}
+#+LATEX_HEADER: \usepackage{bibentry}
+#+LATEX_HEADER: \graphicspath{{../../../output/figures/}{../../../ext/logos/}}
+# LATEX_HEADER: \graphicspath{{../../../ext/logos/}}
+# ----------------------------------------------------------------------
+** Latex macros                                               :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_HEADER: \newcommand{\auth}{Philipp Homan, MD, PhD}
+#+LATEX_HEADER: \newcommand{\authemail}{phoman1@northwell.edu}
+#+LATEX_HEADER: \newcommand{\authtwitter}{@philipphoman}
+#+LATEX_HEADER: \newcommand{\authgithub}{github.com/philipphoman}
+# ----------------------------------------------------------------------
+** Beamer-specific header                                       :ignore:
+# ----------------------------------------------------------------------
+#+LaTeX_CLASS_OPTIONS: [aspectratio=169, bigger]
+# ----------------------------------------------------------------------
+** Authors and affiliations                                     :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_HEADER: \author{Philipp Homan\inst{1,2,3}, MD, PhD}
+#+LATEX_HEADER: \institute[shortinst]{\inst{1} Donald and  
+#+LATEX_HEADER: Barbara Zucker School of Medicine 
+#+LATEX_HEADER: at Northwell/Hofstra, NY, USA
+#+LATEX_HEADER: \and \inst{2} Feinstein Institute for Medical 
+#+LATEX_HEADER: Research, Manhasset, NY, USA \and
+#+LATEX_HEADER: \inst{3} Zucker Hillside Hospital, NY, USA\\ 
+#+LATEX_HEADER: \footnotesize\vspace{5mm}
+#+LATEX_HEADER: \url{phoman1@northwell.edu}\\
+#+LATEX_HEADER: \url{http://github.com/philipphoman}}
+# ----------------------------------------------------------------------
+
+** Buffer-wide source code blocks                             :ignore:
+# ----------------------------------------------------------------------
+# Set elisp variables need for nice formatting We want no new lines in
+# inline results and a paragraph size of 80 characters Important: this
+# has to be evaluated witch C-c C-c in order to work in the current
+# buffer
+#+BEGIN_SRC emacs-lisp :exports none :results silent
+
+; set timestamp format
+;(setq org-export-date-timestamp-format "%ft%t%z")
+(require 'org-wc)
+(flyspell-mode t)
+(synosaurus-mode t)
+(auto-complete-mode t)
+(linum-mode t)
+(whitespace-mode t)
+(setq org-babel-inline-result-wrap "%s")
+(setq org-export-with-broken-links "mark")
+(setq fill-column 72)
+(setq whitespace-line-column 72)
+;(setq org-latex-caption-above '(table image))
+(setq org-latex-caption-above nil)
+(org-toggle-link-display)
+; don't remove logfiles at export
+(setq org-latex-remove-logfiles nil)
+
+; keybindings
+; (global-set-key (kbd "<f7> c") "#+CAPTION: ")
+(defun setfillcolumn72 ()
+	(interactive)
+	(setq fill-column 72)
+)
+
+(defun setfillcolumn42 ()
+	(interactive)
+	(setq fill-column 42)
+)
+(define-key org-mode-map (kbd "C-c #") "#+CAPTION: ")
+(define-key org-mode-map (kbd "C-c f c 4 2") 'setfillcolumn42)
+(define-key org-mode-map (kbd "C-c f c 7 2") 'setfillcolumn72)
+
+(setq org-odt-category-map-alist
+	 '(("__figure__" "*figure*" "value" "figure" org-odt--enumerable-image-p)))
+
+; let ess not ask for starting directory
+(setq ess-ask-for-ess-directory nil)
+
+;(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex
+;-output-directory=../output/tex/ -interaction nonstopmode' -pdf
+;-bibtex -f %f"))
+
+;(setq org-latex-pdf-process '("latexmk -pdf 
+;	-pdflatex='xelatex -shell-escape -interaction nonstopmode' -bibtex -f %f "))
+(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
+
+(setq org-latex-logfiles-extensions 
+	 (quote("bcf" "blg" "fdb_latexmk" "fls" 
+	 "figlist" "idx" "log" "nav" "out" "ptc" 
+	 "run.xml" "snm" "toc" "vrb" "xdv")))
+
+(add-to-list 'org-structure-template-alist
+ '("ca" "#+CAPTION: "))
+
+(add-to-list 'org-structure-template-alist
+ '("he" "#+LATEX_HEADER: "))
+
+(add-to-list 'org-structure-template-alist
+ '("dc" "src_R[:session]{}"))
+
+(add-to-list 'org-structure-template-alist
+ '("sr" "#+HEADER: :exports none
+,#+BEGIN_SRC R :colnames yes :results silent :session\n")) 
+
+(add-to-list 'org-structure-template-alist
+ '("er" "#+END_SRC"))
+ 
+(setq attrlatex "#+ATTR_LATEX: :width 1.0")
+
+(define-key org-mode-map (kbd "C-c #") attrlatex)
+
+
+(add-to-list 'org-structure-template-alist
+	'("cl" "\n** Left\n:PROPERTIES: ?\n:BEAMER_col: 0.5 \n:END:"))
+
+(add-to-list 'org-structure-template-alist
+	'("cr" "\n** Right\n:PROPERTIES: ?\n:BEAMER_col: 0.5 \n:END:"))
+
+(add-to-list 'org-structure-template-alist
+	'("im" "#+ATTR_LATEX: :width 1.0\\textwidth \n[[file:"))
+
+(add-to-list 'org-structure-template-alist
+	'("qt" "\\center \n\\tiny\n"))
+
+
+
+
+#+END_SRC
+# ----------------------------------------------------------------------
+# End preamble
+# ----------------------------------------------------------------------
+# Start with doublespacing 
+\clearpage
+
+* References                                                    :ignore:
+\bibliographystyle{npp}
+\nobibliography{master} 
+
+* Imprecision medicine 
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+if (grepl("Zurich2018", getwd())) { 
+  setwd("../../../src/")
+}
+
+#-----------------------------------------------------------------------
+# load fe data to obtain slopes
+#-----------------------------------------------------------------------
+source("fe_load.R")
+#-----------------------------------------------------------------------
+#+END_SRC
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: 
+:END:
+#+ATTR_LATEX: :width 0.55\textwidth
+[[file:fe_zh2018_schork2015.png]]
+\center
+\tiny
+Schork 2015, Nature 
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [b]
+:END:
+
+``Every day, millions of people are taking medications that will not
+help them.''
+# The top ten highest-grossing drugs in the United States help
+# between 1 in 25 and 1 in 4 of the people who take them.''
+
+* Why prediction?
+- Assumption: great variability in treatment response
+- There exist /responders/ und /non-responders/
+- Ultimate goal: to know before treatment who is going to respond
+- ``precision medicine'', ``individualized medicine'', ``personalized
+  medicine''
+
+* Outline
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of the human brain
+
+#+ATTR_LATEX: :width 0.8\textwidth
+[[file:fe_iw2018_bassett2015a.pdf]]
+# [[file:fe_grid9333.pdf]]
+\center
+\tiny
+Image credit: Dani Bassett, PhD, U Penn
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of treatment response
+
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:fe_iw2018_nature2014.pdf]]
+
+* Responders and non-responders  
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:fe_iw2018_palaniyappan2015.pdf]]
+\center
+\tiny
+Palaniyappan et al. 2015
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:fe_zh2018_homan2012a.pdf]]
+\center
+\tiny
+Homan et al. 2012
+
+* Responders and non-responders
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:fe_iw2018_senn2003.pdf]]
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 0.3\textwidth 
+[[file:fe_iw2018_senn2003a.pdf]]
+
+* A clinical vignette
+- Mister K., 24 year old car mechanic from Nassau County, NY
+- Psychotic symptoms with delusions and suspiciousness
+- Duration of untreated psychosis: about 1 year 
+- 07.01.2014: Admission to psychiatric hospital
+
+* A clinical vignette
+Question: which medication is likely to work?
+
+* Outcome
+** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: 
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+[[file:fe_iw2018_festudy_grid9333.pdf]]
+
+** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+- Trajectory of a 12 week treatment 
+- Medication: risperidone 1-6 mg 
+	
+* Another vignette
+- Mister L., *1991, high school graduate from Queens, NYC
+- Paranoid ideas  
+- Untreated psychosis for about 4 years 
+- 23.08.2011: Admission
+	
+* Another vignette
+** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+[[file:fe_iw2018_festudy_grid9618.pdf]]
+
+** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+- Trajectory of a 12 week treatment 
+- Medication: Aripiprazole 5-15 mg 
+	
+* Conclusions
+What do we learn from the two clinical vignettes?
+
+* Conclusions
+- Mister K. responded to the treatment, Mister L. didn't?
+- Risperidone was helpful, aripiprazole wasn't?
+
+* Risperidone vs. Aripiprazole
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+#-----------------------------------------------------------------------
+# demonstrate similarity of risperidone and aripiprazole
+#-----------------------------------------------------------------------
+exweeks <- c(0, 1, 2, 3, 4, 6, 8, 10, 12)
+fef1 <- fef %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  mutate(study=med)
+
+feo1 <- feo %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  rename(study=med)
+feo1$med = "Risperidone"
+
+df1 <- rbind(fef1, feo1) %>% filter(visit %in% exweeks)
+
+dfm <- df1 %>% group_by(study, visit) %>%
+dplyr::summarize(mean=mean(y, na.rm=TRUE),
+								 sd=sd(y, na.rm=TRUE),
+								 n=sum(!is.na(y)),
+								 se=sd/sqrt(n),
+								 ci=1.96 * se)
+
+pd <- position_dodge(0.5)
+g <- ggplot(dfm, aes(x=visit, y=mean, color=study)) +
+geom_line(size=1.0, position=pd) +
+geom_point(size=3.5, position=pd) +
+geom_errorbar(size=1.0, 
+							aes(ymin=mean-ci, ymax=mean+ci), width=.0,
+						 position=pd) +
+theme_classic(base_size=30) +
+theme(
+	axis.title=element_text(face="bold"),
+	axis.text=element_text(),
+	legend.text=element_text(),
+	legend.title=element_blank(),
+  legend.key.height=unit(1.5, "line"),
+	legend.position="right"
+) +
+scale_color_manual(values=c("darkblue", "darkcyan")) +
+xlab("Week") +
+ylab("Thinking Disturbance BPRS")
+
+
+#p <- (plot_average(rbind(fef1, feo1) %>% filter(visit %in% exweeks)))
+ggsave("../output/figures/fe_zh2018_homan2018b.pdf", plot=g, width=12.5,
+       height=6.99)
+#-----------------------------------------------------------------------
+ 
+#+END_SRC
+** Slide                                                        :ignore:
+*** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_iw2018_robinson2015.png
+
+*** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_zh2018_homan2018b.pdf
+
+* Risperidone vs. Aripiprazole
+- On average no sig. difference between risperidone und
+  aripiprazole
+- Not so in the single case!
+
+* The single case is our patient
+- As doctors we treat single patients, not averages
+- There is no such thing as an ``average patient'' 
+
+* A bunch of single cases
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+#-----------------------------------------------------------------------
+# demonstrate similarity of risperidone and aripiprazole
+#-----------------------------------------------------------------------
+exweeks <- c(0, 1, 2, 3, 4, 6, 8, 10, 12)
+fef1 <- fef %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  mutate(study=med)
+
+feo1 <- feo %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  rename(study=med)
+feo1$med = "Risperidone"
+
+df1 <- rbind(fef1, feo1) %>% filter(visit %in% exweeks)
+
+g2 <- ggplot(df1, aes(x=as.factor(visit), y=y, group=grid)) +
+geom_line(aes(col=study)) +
+geom_point(aes(col=study)) +
+theme_classic(base_size=30) +
+theme(
+	axis.title=element_text(face="bold"),
+	axis.text=element_text(),
+	legend.text=element_text(),
+	legend.title=element_blank(),
+  legend.key.height=unit(1.5, "line"),
+	legend.position="right"
+) +
+scale_color_manual(values=c("darkblue", "darkcyan")) +
+xlab("Week") +
+ylab("Thinking Disturbance BPRS")
+
+
+#p <- (plot_average(rbind(fef1, feo1) %>% filter(visit %in% exweeks)))
+ggsave("../output/figures/fe_zh2018_robinson2015b.pdf", plot=g2, width=12.5,
+       height=6.99)
+#-----------------------------------------------------------------------
+
+#+END_SRC
+
+** Slide                                                        :ignore:
+#+ATTR_LATEX: :width 0.8\textwidth
+file:fe_zh2018_robinson2015b.pdf
+
+* Interim summary
+- RCTs tell us about the efficacy on average 
+- In clinical practice we treat individual patients
+- Our impression: patients respond differently 
+  to the treatment (Mister L. and Mister K.)
+	
+* Is this actually true?
+- We don't know!
+- Not only do we not know, we cannot know
+- Why not?
+
+* Components of the treatment effect  
+1. Drug effect
+2. Placebo effect
+3. Random fluctuations of symptoms (``regression to the mean'')
+
+* Regression to the mean
+** Left
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_iw2018_tverskykahneman.png
+\tiny
+Amos Tversky (1937 - 1996) and Daniel Kahneman (*1934)
+
+** Right
+:PROPERTIES:
+:BEAMER_col: 0.5
+:END:
+- Regression to the mean is ubiquitous
+- Definition: outliers will be closer to the mean when measured again
+- Easy to be fooled by regression to the mean
+- Example: a highly symptomatic patient will most likely be less
+  symptomatic when tested again
+	
+* Symptomatic patients respond better
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+if (grepl("Zurich2018", getwd())) { 
+  setwd("../../../src/")
+}
+
+#-----------------------------------------------------------------------
+# load fe data to obtain slopes
+#-----------------------------------------------------------------------
+source("fe_load.R")
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# load concatenate slopes, calculate correlations of baseline with slope
+#-----------------------------------------------------------------------
+slopes <- rbind(slopes1 %>%
+                mutate(study=paste("CIDAR trial", " (N=",
+                                   nrow(slopes1), ")", sep="")),
+                slopes2 %>%
+                mutate(study=paste("Omega-3 trial", " (N=",
+                                   nrow(slopes2), ")", sep="")))
+rstats <- by(slopes, slopes$study, lm, 
+             formula=formula("scale(slope) ~ scale(bprs_tdbl)"))
+rdf <- data.frame(r=c(coef(summary(rstats[[1]]))[2],
+                      coef(summary(rstats[[2]]))[2]),
+                  pval=c(coef(summary(rstats[[1]]))[8],
+                         coef(summary(rstats[[1]]))[8]))
+rdf$sign <- starsfromp(rdf$pval)											
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# graph of correlations of baseline and slope by trial (cidar, omega)
+#-----------------------------------------------------------------------
+p <- ggplot(slopes, aes(x=bprs_tdbl, y=slope)) +
+  geom_point(size=4) +
+  geom_smooth(method="lm") +
+  facet_wrap(~study) +
+  theme_gray(base_size=30) +
+  xlab("Baseline pos. symptoms") +
+  ylab("BLUP") +
+  annotate("text", x=Inf, y=Inf,
+           label=paste("r=", round(rdf$r, 2),
+                       rdf$sign, sep=""),
+           size=6, hjust=1, vjust=1)
+ggsave(p, filename="../output/figures/fe_zh2018_homan2018.pdf",
+       width=11.6, height=6.39)
+#-----------------------------------------------------------------------
+
+#+END_SRC
+
+** Slide                                                        :ignore:
+#+ATTR_LATEX: :width 0.8\textwidth
+file:fe_zh2018_homan2018.pdf
+\center 
+\tiny
+Homan et al., under review
+
+* Symptomatic patients respond better
+- Typical case of regression to the mean 
+- Purely statistical phenomenon
+- No causal explanation 
+
+* Placebo effect
+** Left                                                         :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_iw2018_hrobjartsson2001a.png
+\tiny
+Hrobjartsson und Gotzsche, 2001, N Engl J Med
+
+** Right                                                        :BMCOL:
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_iw2018_hrobjartsson2001.png
+
+* Components of the treatment effect
+1. Drug effect
+2. Placebo effect
+3. Regression to the mean
+Regression to the mean most likely stronger than placebo
+effect!
+
+* What does this mean for clinical practice?
+- When we treat a patient with a particular drug, we tend to only see
+  the drug effect
+- But we do not know how strong each was: drug, placebo, regresssion to
+  the mean
+- Easy to draw the wrong conclusions
+
+* How big is the variation in drug response? 
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 0.5\textwidth 
+[[file:fe_iw2018_cortes2018.pdf]]
+\center 
+\tiny
+Cortes et al. 2018
+# [[file:fe_iw2018_fisher1938.pdf]]
+# \center 
+# \tiny
+# Sir Ronald Fisher, 1890 - 1962
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 1.0\textwidth
+file:fe_zh2018_winkelbeiner2018.png
+\center 
+\tiny
+Winkelbeiner, Leucht, Kane & Homan, in prep.
+
+* How big is the variation in drug response? 
+#+ATTR_LATEX: :width 0.6\textwidth
+file:fe_zh2018_winkelbeiner2018e.png
+\center 
+\tiny
+Winkelbeiner, Leucht, Kane & Homan, in prep.
+
+* Interim results
+- The assumption that patients vary strongly in their drug response is
+  just that: an assumption
+- Little evidence from clinical trials
+- In the noisy clinical environment it is difficult if not impossible to
+  distinguish effects of drug, placebo, and regression to the mean
+
+* So what can we do instead?  
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+#-----------------------------------------------------------------------
+# demonstrate similarity of risperidone and aripiprazole
+#-----------------------------------------------------------------------
+exweeks <- c(0, 1, 2, 3, 4, 6, 8, 10, 12)
+fef1 <- fef %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  mutate(study=med)
+
+feo1 <- feo %>% dplyr::select(grid, bprs_td, med,
+                              visit, included16w)  %>%
+    rename(y=bprs_td) %>%
+  rename(study=med)
+feo1$med = "Risperidone"
+
+df1 <- rbind(fef1, feo1) %>% filter(visit %in% exweeks)
+
+g2 <- ggplot(df1, aes(x=as.factor(visit), y=y, group=grid)) +
+geom_line(aes(col=study)) +
+geom_point(aes(col=study)) +
+theme_classic(base_size=30) +
+theme(
+	axis.title=element_text(face="bold"),
+	axis.text=element_text(),
+	legend.text=element_text(),
+	legend.title=element_blank(),
+  legend.key.height=unit(1.5, "line"),
+	legend.position="right"
+) +
+scale_color_manual(values=c("darkblue", "darkcyan")) +
+xlab("Week") +
+ylab("Thinking Disturbance BPRS")
+
+
+#p <- (plot_average(rbind(fef1, feo1) %>% filter(visit %in% exweeks)))
+ggsave("../output/figures/fe_zh2018_robinson2015b.pdf", plot=g2, width=12.5,
+       height=6.99)
+#-----------------------------------------------------------------------
+
+#+END_SRC
+
+** Slide                                                        :ignore:
+#+ATTR_LATEX: :width 0.8\textwidth
+file:fe_zh2018_robinson2015b.pdf
+
+* Individual trajectories and partial pooling
+#+ATTR_LATEX: :width 0.9\textwidth 
+[[file:fe_iw2018_homan2018a.pdf]]
+\center 
+\tiny
+Homan et al., under review
+
+* Outline
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of the human brain
+
+#+ATTR_LATEX: :width 0.8\textwidth
+[[file:fe_iw2018_bassett2015a.pdf]]
+# [[file:fe_grid9333.pdf]]
+\center
+\tiny
+Image credit: Dani Bassett, PhD, U Penn
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Complexity of treatment response
+
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:fe_iw2018_nature2014.pdf]]
+
+* Predicting the individual trajectories 
+#+ATTR_LATEX: :width 0.7\textwidth 
+[[file:fe_iw2018_homan2018b.pdf]]
+\center 
+\tiny
+Homan et al., under review
+
+* Nodal degree and clinical response
+#+ATTR_LATEX: :width 0.5\textwidth 
+[[file:fe_iw2018_homan2018c.png]]
+\center 
+\tiny
+Homan et al., under review
+
+* Relevance of hubs for schizophrenia
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 0.6\textwidth 
+[[file:fe_iw2018_crossley2014.png]]
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:fe_iw2018_crossley2014a.pdf]]
+\center
+\tiny
+Crossley et al. 2014
+
+* What is the biological meaning?
+- Structural similarity networks capture functionally relevant
+  developmental maturation
+- Brain regions that covary in their degree are likely to be
+  developmentally related
+- Structural connectomics may provide a window on the developmental
+  pathway of brain connectivity
+
+* How can structural covariance affect treatment response?
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:iq_freesurfer_mccb.pdf]]
+\center 
+\tiny
+Winkelbeiner et al., in prep.
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+#+ATTR_LATEX: :width 0.9\textwidth 
+[[file:fe_iw2018_trampush2015.pdf]]
+\center 
+\tiny
+Trampush et al. 2015, Schizophr Bull
+
+* Another application of individual trajectories  
+** Code                                                         :ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+#-----------------------------------------------------------------------
+# demonstrate similarity of risperidone and aripiprazole
+#-----------------------------------------------------------------------
+source("bmi_load.R")
+exweeks <- c(0, 1, 2, 3, 4, 6, 8, 10, 12)
+bmif <- rbind(fef, feo) %>% filter(visit %in% exweeks) 
+
+g3 <- ggplot(bmif, aes(x=as.factor(visit), y=weight, group=grid)) +
+geom_line(aes(col=med)) +
+#geom_point() +
+theme_classic(base_size=30) +
+theme(
+	axis.title=element_text(face="bold"),
+	axis.text=element_text(),
+	legend.text=element_text(),
+	legend.title=element_blank(),
+  legend.key.height=unit(1.5, "line"),
+	legend.position="right"
+) +
+scale_color_manual(values=c("dodgerblue4", "firebrick")) +
+xlab("Week") +
+ylab("Weight (lb)")
+
+
+#p <- (plot_average(rbind(fef1, feo1) %>% filter(visit %in% exweeks)))
+ggsave("../output/figures/fe_zh2018_homan2018c.pdf", plot=g3, width=12.5,
+       height=6.99)
+#-----------------------------------------------------------------------
+
+#+END_SRC
+
+** Slide                                                        :ignore:
+#+ATTR_LATEX: :width 0.8\textwidth
+file:fe_zh2018_homan2018c.pdf
+
+* Individual trajectories and partial pooling
+#+ATTR_LATEX: :width 0.9\textwidth 
+[[file:fe_zh2018_homan2018d.pdf]]
+\center 
+\tiny
+Homan et al., under review
+
+* Striatal structure-function interaction predicts weight gain 
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:fe_zh2018_homan2018e.png]]
+\center 
+\tiny
+Homan et al., under review
+
+* Clinical relevance
+- Dichotomization may be appealing to clinicians but is statistically
+  inefficient and biologically implausible 
+- Decision making perspective: binary decision must be made at the point
+  of actual clinical care, when all costs and potential benefits are
+  known
+- For example, a clinician may decide that a probable non-responder may
+  still undergo treatment if the potential benefit outweighs the risk
+  for that particular case
+
+* Conclusion
+- We need to be careful with dichotomizing patients
+- Put enough effort in modeling response
+- Partial pooling to exploit full information and apply shrinkage
+* Outlook
+\usebeamerfont{acknowledgments}
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Real-world indiv. differences in treatment outcome:
+- Nation-wide electronic database from Finland 
+-	All individuals 16 to 64 years in 2006 who received a diagnosis of
+  schizophrenia during a period of 8 years (prevalent cohort)
+- Repeated episodes on and off drugs
+- Collaboration with Karolinska Inst. (Jari Tiihonen)
+
+** Right 
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+Relapse prevention through digital health assistance:
+- Multi-site study (10 centers, 342 patients)
+- Technology-enhanced relapse prevention: Smartphone Intervention,
+  Computerized CBT, Daily Support Website, Prescriber Decision Support
+  System
+- Results: Reduction of 4 days in re-hosp. compared to standard care
+  (Homan, ..., Ben-Zeev, Robinson, Kane, in prep)
+
+* Acknowledgments
+# \footnotesize
+\usebeamerfont{acknowledgments}
+\singlespacing
+** Left
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+*Mount Sinai School of Medicine* \\
+-Daniela Schiller \\
+-Roger Clem \\
+
+\vspace{2mm}
+
+*Feinstein Institute and Zucker Hillside Hospital* \\
+-Stephanie Winkelbeiner \\
+-Anil Malhotra \\
+-Delbert Robinson \\
+-John Kane \\
+
+\vspace{2mm}
+
+*University of Berne* \\
+-Werner Strik \\
+-Thomas Dierks \\
+
+\vspace{2mm}
+
+*Karolinska Institutet* \\
+-Jari Tiihonen \\
+
+\vspace{2mm}
+
+** Right 
+:PROPERTIES:
+:BEAMER_col: 0.5
+:BEAMER_opt: [t]
+:END:
+*University of Melbourne* \\
+-Marialuisa Cavelti \\
+
+\vspace{2mm}
+
+*University of Edinburgh* \\
+-David Carmel \\
+
+\vspace{2mm}
+
+*TU Munich* \\
+-Stefan Leucht \\
+
+\vspace{2mm}
+
+*Yale University* \\
+-Ifat Levy \\
+-Ilan Harpaz-Rotem \\
+-John Krystal \\
+
+\vspace{2mm}
+
+*NYU* \\
+-Candace Raio \\
+-Yaacov Trope \\
+
