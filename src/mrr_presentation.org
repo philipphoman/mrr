@@ -20,12 +20,17 @@
 ** Latex header                                                 :ignore:
 # ----------------------------------------------------------------------
 #+LATEX_CLASS:  mybeamerfeinstein
-#+LATEX_HEADER: \usepackage{graphicx}
 #+LATEX_HEADER: \usepackage{setspace}
 #+LATEX_HEADER: \usepackage{amsmath}
 #+LATEX_HEADER: \usepackage{fontspec}
 #+LATEX_HEADER: \usepackage{textpos}
+#+LATEX_HEADER: \usepackage{minted}
 #+LATEX_HEADER: \usepackage{bibentry}
+#+LATEX_HEADER: \usepackage[export]{adjustbox}
+#+LATEX_HEADER: \usepackage{graphicx,caption}
+#+LATEX_HEADER: \usepackage{eurosym}
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{textcomp}
 #+LATEX_HEADER: \graphicspath{{../../../output/figures/}{../../../ext/logos/}}
 # LATEX_HEADER: \graphicspath{{../../../ext/logos/}}
 # ----------------------------------------------------------------------
@@ -107,7 +112,7 @@
 
 ;(setq org-latex-pdf-process '("latexmk -pdf 
 ;	-pdflatex='xelatex -shell-escape -interaction nonstopmode' -bibtex -f %f "))
-(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
+;(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -8bit -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
 
 (setq org-latex-logfiles-extensions 
 	 (quote("bcf" "blg" "fdb_latexmk" "fls" 
@@ -146,6 +151,34 @@
 
 (add-to-list 'org-structure-template-alist
 	'("qt" "\\center \n\\tiny\n"))
+
+; Nicer formatting for code
+(setq org-latex-listings t)
+(setq org-latex-listings 'minted)
+'(org-export-latex-listings-langs 
+(quote ((emacs-lisp "Lisp") 
+				(lisp "Lisp") 
+				(clojure "Lisp") 
+				(c "C") 
+				(cc "C++") 
+				(fortran "fortran") 
+				(perl "Perl") 
+				(cperl "Perl") 
+				(python "Python") 
+				(ruby "Ruby") 
+				(html "HTML") 
+				(xml "XML") 
+				(tex "TeX") 
+				(latex "TeX") 
+				(shell-script "bash") 
+				(gnuplot "Gnuplot") 
+				(ocaml "Caml") 
+				(caml "Caml") 
+				(sql "SQL") 
+				(sqlite "sql") 
+				(R-mode "R"))))
+(setq org-latex-minted-options
+'(("linenos=true") ("bgcolor=lightgray") ("tabsize=2")))
 
 
 
@@ -244,6 +277,13 @@ Three rules:
 - Use version control
 - Use code to analyze data (not GUIs)
 	
+
+* What can we do about it?
+Three rules:
+- *Separate data from analysis*
+- Use version control
+- Use code to analyze data (not GUIs)
+	
 * Separating data from analysis
 #+ATTR_LATEX: :width 0.8\textwidth 
 [[file:mrr_example2018.pdf]]
@@ -285,11 +325,51 @@ https://www.quora.com/
 - Version control system for source code management
 - Tracks every file in a project
 - Keeps track of any change to any file
+- Is relatively easy to use
+- Downside: it works best with text
 
 ** Right
 
 #+ATTR_LATEX: :width 1.0\textwidth 
-[[file:mrr_example2018a.pdf]]
+[[file:mrr_example2018b.pdf]]
+
+* Example: git
+	
+* What can we do about it?
+Three rules:
+- Separate data from analysis
+- Use version control
+- *Use code to analyze data (not GUIs)*
+	
+* Why code?
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.4 
+:BEAMER_opt: [t]
+:END:
+- To keep track of the workflow
+- To make the analysis transparent
+
+** Right
+:PROPERTIES:
+:BEAMER_col: 0.6 
+:BEAMER_opt: [T]
+:BEAMER_env: block
+:END:
+
+*** Block
+\footnotesize
+#+NAME: code1
+#+BEGIN_SRC R :session :exports code :results silent
+parse_msd <- function(m, sd) {
+  # produce string of mean and sd 
+  print(paste("M = ", round(m, 2),
+              ", SD = ", round(sd, 2),
+              sep=""))
+}
+#+END_SRC
+\normalsize
+
 
 * Making research reproducible
 ** Left

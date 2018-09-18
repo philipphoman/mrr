@@ -34,8 +34,7 @@ pacman::p_load(
 # a few example functions
 #-----------------------------------------------------------------------
 parse_msd <- function(m, sd) {
-	# Fill in pieces of mean and sd 
-
+	# procude string of mean and sd 
 	print(paste("M = ", round(m, 2), ", SD = ", round(sd, 2),  sep=""))
 }
 
