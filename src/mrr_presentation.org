@@ -277,9 +277,19 @@ Three rules:
 https://www.quora.com/
 
 * What is git and why should I use it?
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
 - Version control system for source code management
 - Tracks every file in a project
 - Keeps track of any change to any file
+
+** Right
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:mrr_example2018a.pdf]]
 
 * Making research reproducible
 ** Left
