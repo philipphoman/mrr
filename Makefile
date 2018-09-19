@@ -65,8 +65,8 @@ RFILES = $(SRC)/$(PROJ)_do.R \
 DATAFILES = $(DATA)/$(PROJ).csv \
 
 # list tex files
-#TEXFILES = $(wildcard $(SRC)/*.tex)
-TEXFILES = $(ORGFILES:$(SRC)/$(PROJ)_ms.org=$(SRC)/$(PROJ)_ms.tex)
+TEXFILES = $(wildcard $(SRC)/*.tex)
+#TEXFILES = $(ORGFILES:$(SRC)/$(PROJ)_ms.org=$(SRC)/$(PROJ)_ms.tex)
 
 # list org files
 ORGFILES = $(wildcard $(SRC)/$(PROJ)*.org)

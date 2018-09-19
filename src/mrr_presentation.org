@@ -31,6 +31,7 @@
 #+LATEX_HEADER: \usepackage{eurosym}
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{textcomp}
+#+LATEX_HEADER: \usepackage{animate}
 #+LATEX_HEADER: \graphicspath{{../output/figures/}{../ext/logos/}{../lib/}}
 # ----------------------------------------------------------------------
 ** Latex macros                                               :ignore:
@@ -200,6 +201,13 @@ if it only runs on your laptop!
 http://www.jonzelner.net/docker/reproducibility/)
 
 * We are faced with a replication crisis
+#+ATTR_LATEX: :width 0.6\textwidth
+[[file:mrr_schoenbrodt2018.pdf]]
+\center
+\tiny
+Credit: Felix Schoenbrodt 2018 (@nicebread303)
+
+* We are faced with a replication crisis
 ** Left
 :PROPERTIES: 
 :BEAMER_col: 0.5 
@@ -224,11 +232,22 @@ Open Science Collaboration 2015, Science
 \tiny
 Ioannidis 2005, PLOS Med
 
+* As if this wasn't bad enough
+* As if this wasn't bad enough
+\center
+\Huge 
+We are probably also faced \\
+with a reproducibility crisis
+
 * Replicating vs. reproducing 
 - Replicating: People going out and collecting new data
 - Reproducing: People analyzing the same data
-- It turns out that what cannot be replicated may also be
-  difficult to be reproduced
+- What cannot be replicated often difficult to reproduce
+	
+\vspace{6mm}
+\center
+\tiny
+jblevins.org/log/rep
 
 * We are probably also faced with a reproducibility crisis 
 ** Left
@@ -315,6 +334,10 @@ Three simple rules:
 #+ATTR_LATEX: :width 0.6\textwidth 
 [[file:mrr_example2018.pdf]]
 
+* Was this done here?
+* Was this done here?
+\center
+\animategraphics[autoplay,width=0.3\textwidth]{25}{mrr_devito2018-}{0}{65}
 * Separating data from analysis
 ** Left
 :PROPERTIES: 
