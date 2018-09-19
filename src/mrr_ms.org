@@ -1,0 +1,62 @@
+#+TITLE: Getting started with org-mode
+#+AUTHOR: Philipp Homan
+#+EMAIL: phoman1@northwell.edu
+#+OPTIONS: toc:nil email:t
+* This is a section header
+* This is another one
+** This is a subsection
+- Bullet point 1
+- Bullet point 2
+** This is another one
+- Bullet point 1
+- Bullet point 2
+* Another section, with a table
+** Table 2
+
+This is a table:
+
+|    *Col1* |    *Col2* | *Col3* | *Col4* |
+|-----------+-----------+--------+--------|
+|       234 |      2432 |    425 |    788 |
+|        96 |       167 |    768 |    890 |
+|     45458 |      5745 |    988 |     89 |
+|-----------+-----------+--------+--------|
+| 15262.667 | 2781.3333 |    727 |        |
+#+TBLFM: @5$1=vmean(@2..@4)::@5$2=vmean(@2..@4)::@5$3=vmean(@2..@4)
+
+** Table 3
+|      Col1 |      Col2 |      Col3 |
+|-----------+-----------+-----------|
+|       878 |       787 |        23 |
+|        24 |      2424 |      4925 |
+|      2495 |       592 |      5925 |
+|-----------+-----------+-----------|
+| 1132.3333 | 1267.6667 | 3624.3333 |
+#+TBLFM: @5$1=vmean(@2..@4)::@5$2=vmean(@2..@4)::@5$3=vmean(@2..@4)
+
+* These are a few notes
+- I should really learn org-mode
+
+* This section includes R code
+Here we will show how to include results
+from a calculation in R. Let's say we
+want the mean and SD of a variable.
+
+#+BEGIN_SRC R :exports none :results silent :session
+source("mrr_func.R")
+x <- rnorm(100, 0, 1)
+m <- round(mean(x), 2)
+std <- round(sd(x), 2)
+#+END_SRC
+
+The mean of our variable is src_R[:session]{m} {{{results(0.01)}}}, the
+SD is src_R[:session]{std} {{{results(1.13)}}}. We can do the same by
+calling a function with the variables, what we will get is a nicely
+formatted string (src_R[:session]{parse_msd(m, std)} {{{results(M = 0.03\, SD = 1)}}})
+
+We can also easily add citations [[cite:Malhotra2015]].
+This is another citation [[cite:Sarpal2015]].
+
+* References
+\bibliographystyle{nature}
+\bibliography{master}

@@ -1,0 +1,1449 @@
+#+TITLE: *Striatal volume and functional connectivity*
+#+TITLE: *predict weight gain in early-phase psychosis*
+* Preamble                                                    :ignore:
+** General comments                                           :ignore:
+# ----------------------------------------------------------------------
+# - Turn on synonyms by starting synosaurus-mode
+# - Look up words using C-c sr
+# - Turn on dictionary by starting flyspell-mode
+# - Count words by section using org-wc-display
+# ----------------------------------------------------------------------
+** Specific comments for this manuscript                      :ignore:
+# ----------------------------------------------------------------------
+# Potential reviewers:
+# - Kelvin Lim
+# - Ed Bullmoore
+# - Rene Kahn
+# - Ted Satterthwaite
+# - Adrienne Lahti
+# ----------------------------------------------------------------------
+** org specific settings                                      :ignore:
+# ----------------------------------------------------------------------
+#+OPTIONS: email:nil toc:nil num:nil author:nil date:t tex:t
+#+STARTUP: align fold
+#+SEQ_TODO: TODO(t) | DONE(d)
+#+TAGS: figure(f) check(c) noexport(n) ignore(i)
+#+LANGUAGE: en
+#+EXCLUDE_TAGS: noexport TODO
+#+DATE: {{{time(%Y-%m-%d %H:%M)}}}
+# ----------------------------------------------------------------------
+** Latex header                                               :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_CLASS:  myarticle
+#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{textcomp}
+#+LATEX_HEADER: \usepackage{setspace}
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{mathtools}
+#+LATEX_HEADER: \usepackage[hidelinks]{hyperref}
+#+LATEX_HEADER: \urlstyle{same}
+# LATEX_HEADER: \usepackage{natbib}
+#+LATEX_HEADER: \usepackage{cite}
+#+LATEX_HEADER: \usepackage[labelfont=bf]{caption}
+#+LATEX_HEADER: \usepackage{times}
+# LATEX_HEADER: \renewcommand{\familydefault}{bch}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \graphicspath{{../output/figures/}{../lib/}}
+#+LATEX_HEADER: \topmargin 0.0cm
+#+LATEX_HEADER: \oddsidemargin 0.2cm
+#+LATEX_HEADER: \textwidth 16cm 
+#+LATEX_HEADER: \textheight 21cm
+#+LATEX_HEADER: \footskip 1.0cm
+#+LATEX_HEADER: \DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{% 
+#+LATEX_HEADER:       #1\;\delimsize\|\;#2% 
+#+LATEX_HEADER: } 
+#+LATEX_HEADER: \newcommand{\noop}[1]{}
+#+LATEX_HEADER: \newcommand{\infdiv}{D_{KL}\infdivx} 
+#+LATEX_HEADER: \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+#+LATEX_HEADER: \newcommand\sumin{\sum_{i=1}^{n}}
+#+LATEX_HEADER: \newcommand{\Xoi}[1]{#1(i)}
+#+LATEX_HEADER: \newcommand{\frakPQ}[2]{\frac{\Xoi{#1}}{\Xoi{#2}}}
+#+LATEX_HEADER: \newcommand{\DKLPQ}[3]{D_{\mathrm{KL}}(#1 #3 #2)}
+# LATEX_HEADER: \usepackage{indentfirst}
+# ----------------------------------------------------------------------
+** Authors and affiliations                                   :ignore:
+# ----------------------------------------------------------------------
+#+LATEX_HEADER: \author{
+#+LATEX_HEADER: Philipp Homan$^{1,2,3\ast}$, M.D., Ph.D.,
+#+LATEX_HEADER: Miklos Argyelan$^{1,2,3}$, M.D., M.Sc., \\
+#+LATEX_HEADER: Christina L. Fales$^{2}$, Ph.D., 
+#+LATEX_HEADER: Pamela DeRosse$^{1,2,3}$, Ph.D., 
+#+LATEX_HEADER: Philip Szeszko$^{4}$, Ph.D., \\
+#+LATEX_HEADER: Delbert G. Robinson$^{1,2,3}$, M.D.,  
+#+LATEX_HEADER: Todd Lencz$^{1,2,3\dagger}$, Ph.D.,\\
+#+LATEX_HEADER: Anil K. Malhotra$^{1,2,3\dagger}$, M.D.
+#+LATEX_HEADER: \\
+# LATEX_HEADER: \normalsize{$^{1}$Center}\\  
+#+LATEX_HEADER: \normalsize{$^{1}$Center for Psychiatric Neuroscience,}\\
+#+LATEX_HEADER: \normalsize{The Feinstein Institute for Medical Research,}
+#+LATEX_HEADER: \normalsize{Manhasset, NY}\\
+#+LATEX_HEADER: \normalsize{$^{2}$Division of Psychiatry Research,}\\
+#+LATEX_HEADER: \normalsize{The Zucker Hillside Hospital, Northwell}
+#+LATEX_HEADER: \normalsize{Health, New York, NY}\\
+#+LATEX_HEADER: \normalsize{$^{3}$Department of Psychiatry,}\\ 
+#+LATEX_HEADER: \normalsize{The Donald and Barbara Zucker}
+#+LATEX_HEADER: \normalsize{School of Medicine at Northwell/Hofstra,}
+#+LATEX_HEADER: \normalsize{Hempstead, NY}\\
+# LATEX_HEADER: \normalsize{$^{4}$Department of Psychiatry,}\\
+# LATEX_HEADER: \normalsize{Icahn School of Medicine at Mount Sinai, }
+# LATEX_HEADER: \normalsize{New York, NY, USA.}\\
+#+LATEX_HEADER: \normalsize{$^{4}$James J. Peters Veterans Affairs}
+#+LATEX_HEADER: \normalsize{Medical Center, Bronx, New York.}\\
+#+LATEX_HEADER: \\
+#+LATEX_HEADER: \normalsize{$^\dagger$Equal contribution }\\ 
+#+LATEX_HEADER: \normalsize{$^\ast$Corresponding author. E-mail: } 
+#+LATEX_HEADER: \normalsize{phoman1@northwell.edu.}
+#+LATEX_HEADER: }
+# ----------------------------------------------------------------------
+** Buffer-wide source code blocks                             :ignore:
+# ----------------------------------------------------------------------
+# Set elisp variables need for nice formatting We want no new lines in
+# inline results and a paragraph size of 80 characters Important: this
+# has to be evaluated witch C-c C-c in order to work in the current
+# buffer
+#+BEGIN_SRC emacs-lisp :exports none :results silent
+
+; set timestamp format
+;(setq org-export-date-timestamp-format "%ft%t%z")
+(require 'org-wc)
+(flyspell-mode t)
+(synosaurus-mode t)
+(auto-complete-mode t)
+(linum-mode t)
+(whitespace-mode t)
+(setq org-babel-inline-result-wrap "%s")
+(setq org-export-with-broken-links "mark")
+(setq fill-column 72)
+(setq whitespace-line-column 72)
+;(setq org-latex-caption-above '(table image))
+(setq org-latex-caption-above nil)
+(org-toggle-link-display)
+; don't remove logfiles at export
+(setq org-latex-remove-logfiles nil)
+
+; keybindings
+; (global-set-key (kbd "<f7> c") "#+CAPTION: ")
+(defun setfillcolumn72 ()
+	(interactive)
+	(setq fill-column 72)
+)
+
+(defun setfillcolumn42 ()
+	(interactive)
+	(setq fill-column 42)
+)
+(define-key org-mode-map (kbd "C-c #") "#+CAPTION: ")
+(define-key org-mode-map (kbd "C-c f c 4 2") 'setfillcolumn42)
+(define-key org-mode-map (kbd "C-c f c 7 2") 'setfillcolumn72)
+
+(setq org-odt-category-map-alist
+	 '(("__figure__" "*figure*" "value" "figure" org-odt--enumerable-image-p)))
+
+; let ess not ask for starting directory
+(setq ess-ask-for-ess-directory nil)
+
+;(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex
+;-output-directory=../output/tex/ -interaction nonstopmode' -pdf
+;-bibtex -f %f"))
+
+;(setq org-latex-pdf-process '("latexmk -pdf 
+;	-pdflatex='xelatex -shell-escape -interaction nonstopmode' -bibtex -f %f "))
+(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
+
+(setq org-latex-logfiles-extensions 
+	 (quote("bcf" "blg" "fdb_latexmk" "fls" 
+	 "figlist" "idx" "log" "nav" "out" "ptc" 
+	 "run.xml" "snm" "toc" "vrb" "xdv")))
+
+(add-to-list 'org-structure-template-alist
+ '("ca" "#+CAPTION: "))
+
+(add-to-list 'org-structure-template-alist
+ '("he" "#+LATEX_HEADER: "))
+
+(add-to-list 'org-structure-template-alist
+ '("dc" "src_R[:session]{}"))
+
+(add-to-list 'org-structure-template-alist
+ '("sr" "#+HEADER: :exports none
+,#+begin_src R :colnames yes :results silent :session\n")) 
+
+(add-to-list 'org-structure-template-alist
+ '("er" "#+END_SRC"))
+
+#+END_SRC
+# ----------------------------------------------------------------------
+# End preamble
+# ----------------------------------------------------------------------
+# Start with doublespacing 
+\doublespacing
+\clearpage
+
+** End preamble                                               :ignore:
+# ----------------------------------------------------------------------
+# Start with doublespacing 
+
+\doublespacing
+\clearpage
+
+* Abstract
+** Code                                                       :ignore:
+# First, make sure all variables are availabe
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+# source("../src/fe_func.R")
+source("../src/bmi_load.R")
+
+fef <- read.csv("../data/bmi_cidar.csv")
+feo <- read.csv("../data/bmi_omega3.csv")
+hcm <- read.csv("../data/bmi_hcm.csv")
+#hcf <- read.csv("../output/tables/fe_freesurfer_hcfrommiklos.csv")
+
+# Load necessary results tables
+roistab   <- read.csv("../output/tables/fe_freesurfer_roinames.csv")
+tabvols   <- read.csv("../output/tables/bmi_freesurfer_vol.csv")
+tabvolhc  <- read.csv("../output/tables/bmi_freesurfer_volhc.csv")
+tabvolint <- read.csv("../output/tables/bmi_freesurfer_vol_int.csv")
+
+# Custom functions
+pvalstr <- function(pval) {
+	if (pval < 0.001) {
+		return("< 0.001")
+	} else {
+		return(paste("=", round(pval, 3)))
+	}
+}
+
+parse_vals <- function(action, param) {
+	switch(action,
+		pval={
+			if (param < 0.001) {
+				 return("< 0.001")
+			} else {
+				 return(paste("=", round(param, 3)))
+			}
+		})
+}
+
+parse_msd <- function(x) {
+	# Fill in pieces of mean and sd 
+
+	print(paste("M = ", round(mean(x, na.rm=TRUE), 2), 
+              ", SD = ", round(sd(x, na.rm=TRUE), 2),  sep=""))
+}
+
+parse_tstat <- function(tstat) {
+	# Fill in pieces of t test as text
+	print(paste("/t/ (", round(tstat$parameter,2), ") = ",
+				round(tstat$statistic, 2), ", /P/ ", parse_vals("pval", 
+				tstat$p.value), sep=""))
+}
+parse_rstat <- function(rstat) {
+	# Fill in pieces of pearson correlation as text
+	print(paste("/r/ (", round(rstat$parameter, 2), ") = ",
+				round(rstat$estimate, 2), ", /P/ ", parse_vals("pval", 
+				rstat$p.value), sep=""))
+}
+parse_r <- function(r, n) {
+	# Fill in pieces of pearson correlation as text
+	t <- r/sqrt((1-r^2)/(n-2))
+	print(paste("/r/ (", n-2, ") = ",
+	round(r, 2), ", /P/ ", parse_vals("pval", 
+				2*pt(t, n, lower=FALSE)), sep=""))
+}
+parse_lm <- function(lm, index=2, scaled=FALSE) {
+	# Fill in pieces of lm as text
+	lsm <- as.data.frame(coef(summary(lm.beta(lm))))[index, ]
+	if (scaled==FALSE) {
+	  beta <- lm.beta::lm.beta(lm)$standardized.coefficients[index]
+  } 
+  else {
+	  beta <- lsm$Estimate
+  }
+
+	def <- summary(lm)$df[2]
+	print(paste("\\beta = ",
+				round(beta, 2), ", /t/ (", round(def, 2), ") = ", 
+				 round(lsm$"t value", 2), ", /P/ ", 
+				parse_vals("pval", lsm$"Pr(>|t|)"), sep=""))
+}
+
+parse_fstat <- function(anovatab, index) {
+	# parse data frame coming from f test
+	a <- as.data.frame(anovatab)[index, ]
+	print(paste("/F/ (", round(a$NumDF, 2), ", ", round(a$DenDF, 2), 
+				") = ", round(a$F.value, 2), ", /P/ ", parse_vals("pval", 
+				a$"Pr(>F)"), sep=""))
+}
+
+parse_chi <- function(chisq, def) {
+	# Fill in pieces of chi square test as text
+	pval <- pchisq(chisq, def, lower=FALSE)
+	print(paste("\\chi^{2} = ",
+				round(chisq, 2), ", df=", def,  
+				", /P/ = ", parse_vals("pval", pval), sep=""))
+}
+
+parse_table <- function(table) {
+	# remove any nil by replacing NA by whitespace
+	table[is.na(table)] <- ""
+	return(table)
+}
+
+#+END_SRC
+
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session :cache nil
+# Merge data sets and keep only interesting variables
+# Rename variables for later
+fefa <- fef %>% dplyr::filter(day==0&included16w==1) %>%
+								dplyr::mutate(study="CIDAR", group="SZ") %>%
+                dplyr::select(dup, iq, education, 
+                              mccb, bprs, bprs_td, bprs_tdbl, 
+                              age, sex, race, hasmri, study, group, 
+															bmi, weight, class, alcohol, drugs,
+															icv, Left.Putamen, Right.Putamen,
+															Left.Caudate, Right.Caudate,
+															Left.Hippocampus, Right.Hippocampus)
+
+															
+feoa <- feo %>% dplyr::filter(day==0&included16w==1) %>%
+								dplyr::mutate(study="Omega3", group="SZ") %>%
+                dplyr::select(dup, iq, education,
+                              mccb, bprs, bprs_td, bprs_tdbl, 
+                              age, sex, race, hasmri, study, group, 
+															bmi, weight, class, alcohol, drugs,
+															icv, Left.Putamen, Right.Putamen,
+															Left.Caudate, Right.Caudate,
+															Left.Hippocampus, Right.Hippocampus)
+
+
+hcm$male[hcm$sex==1] <- 1
+hcm$female[hcm$sex==2] <- 1
+hcmb <- hcm %>% dplyr::rename(age=age) %>%
+        dplyr::select(grid, female, male, age, race, icv, bmi, weight, 
+				              education,
+											Left.Putamen, Right.Putamen,
+											Left.Caudate, Right.Caudate,
+											Left.Hippocampus, Right.Hippocampus) %>%
+				mutate(study="HC", group="HC")
+hcmeanage <- round(mean(hcmb$age), 1)
+hcsdage <- round(sd(hcmb$age), 1)
+hcfemales <- sum(hcmb$female, na.rm=TRUE)
+feffeo <- rbind(fefa, feoa) %>% filter(hasmri==1)
+
+# R version
+rvers <- version$version.string
+			 
+# Custom variables
+n_partic <- nrow(feffeo)
+n_partic_hc <- nrow(hcmb)
+
+#+END_SRC
+
+** Text                                                       :ignore:
+@@latex:\noindent@@ *Objective:* Second-generation antipsychotic drugs
+(SGAs) are essential in the treatment of psychotic disorders, but are
+well-known for inducing substantial weight gain and obesity. Critically,
+weight gain may reduce life expectancy for up to 20-30 years in patients
+with psychotic disorders, and prognostic bio-markers are generally
+lacking. The dorsal striatum, rich in dopamine D2 receptors which are
+antagonized by antipsychotic medications, plays a key role in the human
+reward system and in appetite regulation, suggesting that altered
+dopamine activity in the striatal reward circuitry may be responsible
+for increased food craving and resultant weight gain.
+
+@@latex:\noindent@@ *Method:* Here, we measured striatal volume and
+striatal resting state functional connectivity at baseline, and weight
+gain over the course of 12 weeks of antipsychotic treatment in
+src_R[:session]{nrow(bmi)} {{{results(82)}}} patients with early-phase
+psychosis. We also included a sample of src_R[:session]{n_partic_hc}
+{{{results(58)}}} healthy controls. Weight measurements were completed
+at baseline, and then weekly for 4 weeks, and every 2 weeks until
+week 12. We used linear mixed models to compute individual weight gain
+trajectories. Striatal volume and whole-brain striatal connectivity were
+then calculated for each subject, and used to assess the relationship
+between striatal structure and function and individual weight gain in
+multiple regression models.
+
+@@latex:\noindent@@ *Results:* Patients had similar baseline weights
+and body mass indices (BMI) compared to healthy controls. There was no
+evidence that prior drug exposure or duration of untreated psychosis
+correlated with baseline BMI. Higher left putamen volume and lower
+frontopolar connectivity predicted magnitude of weight gain in patients,
+and these effects multiplied when the structure-function interaction was
+considered.
+
+@@latex:\noindent@@ *Conclusions:* These results provide evidence for a
+synergistic effect of striatal structure and function on
+antipsychotics-induced weight gain. Lower fronto-striatal connectivity,
+implicated in less optimal long-term decision making, was associated
+with more weight gain, and this relationship was stronger for higher
+compared to lower left putamen volumes.
+
+\clearpage
+
+* Results
+** Code                                                :noexport:ignore:
+#+HEADER: :exports none
+#+BEGIN_SRC R :results silent :session
+groups    <- list("cidar", "omega3")
+
+# Random seed for the following analyses
+set.seed(20180214)
+
+# Lists of data sets and slopes
+listall       <- list(fef, feo)
+listallslopes <- list(slopes1, slopes2)
+
+#-----------------------------------------------------------------------
+# show weight gain across schizophrenia cohorts
+#-----------------------------------------------------------------------
+exweeks <- c(0, 1, 2, 3, 4, 6, 8, 10, 12)
+fef1 <- fef %>% dplyr::select(grid, weight, hasmri,
+                              visit, included16w)  %>%
+  mutate(study="pooled")
+feo1 <- feo %>% dplyr::select(grid, weight, hasmri,
+                              visit, included16w)  %>%
+  mutate(study="pooled")
+
+p0 <- (plot_average(rbind(fef1, feo1) %>% filter(visit %in% exweeks,
+                                                 hasmri==1) %>%
+                   mutate(y=weight), xlab="Week", ylab="Weight (lb)",
+      legend.position=""))
+
+ggsave("../output/figures/bmi_averagetx.pdf",
+       plot=p0, width=16, height=9, scale=0.5)
+#-----------------------------------------------------------------------
+# Extract grids for each group
+#-----------------------------------------------------------------------
+grid <- lapply(listall,
+               function(x) {
+                 filter(x,
+                        hasmri==1 &
+                        day==0) %>%
+                   dplyr::select(grid)
+               })
+#-----------------------------------------------------------------------
+slopelist <- lapply(listallslopes,
+               function(x) {
+                 x <- filter(x, hasmri==1) %>%
+                   dplyr::select(grid, slope, icv, age, sex, bmi,
+                                 education, med,
+                                 weight, slope_nopooling,
+                                 mccb_speed,
+                                 mccb_reasoning,
+                                 mccb_attnvig,
+                                 mccb_wm,
+                                 mccb, iq, bprs_tdbl, dup, race,
+                                 matches("Left|Right"))
+               })
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# Test striatal volume as predictor of BMI change 
+#-----------------------------------------------------------------------
+allgrids <- do.call("rbind", grid) %>%
+  mutate(study=rep(unlist(groups),times=c(40, 41)))
+
+allslopes <- do.call("rbind", slopelist) %>%
+  mutate(study=rep(unlist(groups), times=c(40, 41)),
+         Left.Striatum=Left.Putamen + Left.Caudate,
+         Right.Striatum=Right.Putamen + Right.Caudate)
+
+allslopesl <- allslopes %>% gather(key=roi, value=volume,
+                                   #Left.Striatum, Right.Striatum,
+                                   Left.Putamen, Right.Putamen,
+                                   Left.Caudate, Right.Caudate,
+                                   Left.Hippocampus,
+                                   Right.Hippocampus) %>%
+    mutate(hemi=rep(rep(c("L", "R"), each=nrow(allslopes)), 3),
+           grid=factor(grid),
+           roi=rep(c("Put", "Caud", "Hipp"),
+                   each= 2 * nrow(allslopes)))
+#-----------------------------------------------------------------------
+# Plot correlation by slope type 
+#-----------------------------------------------------------------------
+allslopesll <- allslopesl %>%
+  gather(key=slopetype , value=slope, slope, slope_nopooling)
+
+p2 <- ggplot(allslopesll %>% filter(slopetype=="slope"),
+            aes(x=volume, y=slope)) +
+  geom_point(size=2) +
+  geom_smooth(method="lm") +
+  facet_wrap(~paste(roi, hemi), scale="free", nrow=3) +
+  theme_gray(base_size=12) +
+  theme(
+    axis.title=element_text(size=20, face="bold"),
+    plot.title=element_text(face="bold", hjust=0.5),
+    strip.text.x=element_text(size=14, face="bold")) +
+  xlab(bquote(bold(Volume~(mm^3)))) +
+  ylab("Weight gain per day (lb)") +
+  #ggtitle("Partial pooling") 
+  ggtitle("") 
+  #scale_x_continuous(labels = function(x) format(x, scientific = TRUE))
+
+p3 <- ggplot(allslopesll %>% filter(slopetype=="slope_nopooling"),
+            aes(x=volume, y=slope)) +
+  geom_point(size=2) +
+  geom_smooth(method="lm") +
+  facet_wrap(~paste(roi, hemi), scale="free", nrow=3) +
+  theme_gray(base_size=12) +
+  theme(
+    axis.title=element_text(size=20, face="bold"),
+    plot.title=element_text(face="bold", hjust=0.5),
+    strip.text.x=element_text(size=12, face="bold")) +
+  xlab(bquote(bold(Volume~(mm^3)))) +
+  ylab("") +
+  ggtitle("Change score") 
+  #scale_x_continuous(labels = function(x) format(x, scientific = TRUE))
+#-----------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------
+# Plot betas of putamen connectivity
+#-----------------------------------------------------------------------
+#betaslopes <- betas %>% left_join(allslopes)
+p5 <- ggplot(bmi, aes(x=beta, y=slope)) +
+  geom_point(size=4) +
+  geom_smooth(method="lm") +
+  theme_gray(base_size=20) +
+  xlab(bquote(bold("Fronto-striatal connectivity ("*beta*")"))) +
+  ylab(bquote(bold("Weight gain per day (lb)")))
+#print(p5)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+l <- by(allslopesl,
+       list(allslopesl$roi, allslopesl$hemi),
+       lm,
+       formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+           scale(bmi) + scale(icv) +
+             scale(dup) + scale(volume)"))
+
+
+
+cvec <- sapply(l, function(x) coef(summary(x))[7])
+evec <- sapply(l, function(x) coef(summary(x))[15]) * 1.96
+tvec <- sapply(l, function(x) coef(summary(x))[23])
+pvec <- sapply(l, function(x) coef(summary(x))[31])
+
+td <- data.frame(coef=cvec,
+                ci=evec,
+                se=evec/1.96,
+                tval=tvec,
+                df=summary(l[[1]])$df[2],
+                pval=pvec,
+                sig=starsfromp(pvec, "", "b"),
+                roi=rep(sort(unique(allslopesl$roi)), 2),
+                hemi=rep(c("L", "R"), each=3))
+td$roihemi <- paste(td$roi, td$hemi)
+td$x <- "" 
+write.csv(td, "../output/tables/bmi_freesurfer_vol.csv", row.names=FALSE)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# model for left putamenvolume
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) + scale(dup) + 
+               scale(as.numeric(as.factor(med))) +
+              scale(Left.Putamen)")
+lm4 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------
+# test for interaction of med by volume
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) + scale(dup) + 
+               scale(as.numeric(as.factor(med))) *
+              scale(Left.Putamen)")
+lm5 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for interaction of med by connectivity
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(as.numeric(as.factor(med))) *
+                    scale(beta)")
+lm6 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for metabolic baseline effects
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) + scale(dup) + 
+               scale(pulse) + scale(systole) + scale(diastole) +
+               scale(as.numeric(as.factor(med))) +
+              scale(Left.Putamen)")
+lm7 <- lm(formula, data=bmi)
+
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) + scale(dup) + 
+               scale(pulse) + scale(systole) + scale(diastole) +
+               scale(as.numeric(as.factor(med))) +
+              scale(beta)")
+lm8 <- lm(formula, data=bmi)
+
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) + scale(dup) + 
+               scale(bprs) +
+               scale(as.numeric(as.factor(med))) +
+              scale(Left.Putamen)")
+lm9 <- lm(formula, data=bmi)
+
+formula=formula("scale(bmi) ~ scale(age) * scale(sex) +
+                scale(priordrugdays) +
+               scale(as.numeric(as.factor(med)))")
+lm10 <- lm(formula, data=bmi)
+
+formula=formula("scale(bmi) ~ scale(age) * scale(sex) +
+               scale(as.numeric(as.factor(mednaive))) +
+               scale(as.numeric(as.factor(med)))")
+lm10.1 <- lm(formula, data=bmi)
+
+
+formula=formula("scale(bmi) ~ scale(age) * scale(sex) +
+                   scale(dup) + scale(as.numeric(as.factor(med)))")
+lm10.2 <- lm(formula, data=bmi)
+
+
+# bmi of non naive patients vs bmi of controls
+bmi_nonnaive <- mean(bmi$bmi[bmi$mednaive=="no"], na.rm=TRUE)
+bmi_hcm <- mean(hcm$bmi, na.rm=TRUE)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for an effect of modal dose on slope 
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+                   scale(as.numeric(as.factor(med))) *
+                   scale(modal.dose.mg)")
+lm11 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for an interaction modal dose and volume 
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) + scale(icv) +
+                   scale(as.numeric(as.factor(med))) +
+                   scale(modal.dose.mg) * scale(Left.Putamen)")
+lm12 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for an interaction modal dose and connectivity
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) +
+                   scale(as.numeric(as.factor(med))) +
+                   scale(modal.dose.mg) * scale(beta)")
+lm13 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for an interaction of med naive and volume 
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) + scale(icv) +
+                   scale(as.numeric(as.factor(med))) +
+                   scale(as.numeric(as.factor(mednaive))) *
+                   scale(Left.Putamen)")
+lm14 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test for an interaction of med naive and volume 
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) + 
+                   scale(as.numeric(as.factor(med))) +
+                   scale(as.numeric(as.factor(mednaive))) *
+                   scale(beta)")
+lm15 <- lm(formula, data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# test effect of beta in med naive 
+#-----------------------------------------------------------------------
+formula=formula("scale(slope) ~ scale(age) * scale(sex) + 
+                   scale(as.numeric(as.factor(med))) +
+                   scale(beta)")
+lm16 <- lm(formula, data=bmi %>% filter(mednaive=="yes"))
+#-----------------------------------------------------------------------
+
+
+pd <- position_dodge(0.5)
+p4 <- ggplot(td, aes(x=x, y=coef)) +
+  geom_point(size=2, position=pd) +
+  geom_errorbar(aes(ymin=coef-ci, ymax=coef+ci), width=.0) +
+  geom_hline(yintercept=0, linetype="dashed") +
+  facet_wrap(~roihemi, nrow=1) +
+  theme_gray(base_size=16) +
+  theme(axis.title=element_text(size=26, face="bold"),
+        axis.ticks=element_blank(),
+        strip.text.x=element_text(size=15, face="bold")) +
+  xlab("") +
+  ylab(bquote(bold(beta)))
+
+pg0 <- plot_grid(p0, labels=NULL, scale=1.0, ncol=1)
+pg1 <- plot_grid(pg0, p2, labels=NULL, ncol=2)
+png1 <- readPNG("../output/figures/bmi_fsl.png")
+pn0 <- rasterGrob(png1, interpolate=FALSE)
+pg2 <- plot_grid(p4, pn0, labels=NULL, nrow=1)
+p <- plot_grid(pg1, pg2,
+               labels="AUTO", scale=0.9, label_size=35, nrow=2)
+dev.off()
+
+#-----------------------------------------------------------------------
+# make correlation plots more narrow
+#-----------------------------------------------------------------------
+p2n <- plot_grid(p2, labels=NULL, ncol=2, rel_widths=c(2.75, 1))
+p5n <- plot_grid(p5, labels=NULL, scale=0.8)
+pn00 <- plot_grid(pn0, labels=NULL)
+p <- plot_grid(p0, p4, pn00, p5, align="hv", axis="lgbt",
+               labels="AUTO", scale=0.8, label_size=35, ncol=3)
+p <- plot_grid(p0, p4, align="hv", axis="lgbt",
+               labels="AUTO", scale=0.8, label_size=35, ncol=2)
+
+p <- plot_grid(pn00, p5, align="hv", axis="lgbt",
+               labels="AUTO", scale=0.8, label_size=35, ncol=3)
+
+
+#ggsave(plot=p, filename="../output/figures/bmi_freesurfer_vol.pdf",
+#       width=18.3, height=10.6)
+
+#-----------------------------------------------------------------------
+# main volume model
+#-----------------------------------------------------------------------
+lm1 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+              scale(dup) + scale(Left.Putamen),
+          data=bmi)
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+# synergistic volume and connectivity model
+#-----------------------------------------------------------------------
+lm2 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+              scale(dup) + scale(Left.Putamen) * scale(beta),
+          data=bmi)
+
+# test for a correlation of volume and connectivity
+lm2.0 <- lm(scale(Left.Putamen) ~ scale(beta), data=bmi)
+
+# test this with prior drug exposure included
+lm2.1 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+            scale(as.numeric(as.factor(mednaive))) +
+              scale(dup) + scale(Left.Putamen) * scale(beta),
+          data=bmi)
+					
+# test this with type of med included
+lm2.2 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+            scale(as.numeric(as.factor(med))) +
+              scale(dup) + scale(Left.Putamen) * scale(beta),
+          data=bmi)
+
+# test this with type of med dosage
+lm2.3 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+            scale(modal.dose.mg) +
+              scale(dup) + scale(Left.Putamen) * scale(beta),
+          data=bmi)
+
+# test this without bipolars
+lm2.4 <- lm(scale(slope) ~ scale(age) * scale(sex) +
+            scale(bmi) + scale(icv) +
+              scale(dup) + scale(Left.Putamen) * scale(beta),
+          data=bmi %>% filter(is.na(bipolar)))
+
+
+
+ff <- tempfile()
+png(filename=ff)
+a <- avPlots(lm2, layout=c(5, 5))
+dev.off()
+unlink(ff)
+x <- as.data.frame(a["scale(Left.Putamen):scale(beta)"])[, 1]
+y <- as.data.frame(a["scale(Left.Putamen):scale(beta)"])[, 2]
+tmp <- data.frame(x=x, y=y)
+tmf <- train(y ~ x, method="lm", data=tmp,
+             trControl=trainControl(method="LOOCV"))
+r_partial_orig <- as.numeric(sqrt(summary(tmf)$r.squared))
+r_partial_crossval <- as.numeric(sqrt(tmf$results[3]))
+#-----------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------
+# visualize the interaction
+#-----------------------------------------------------------------------
+bmi$lowleftputvol <- ifelse(bmi$Left.Putamen <=
+                            median(bmi$Left.Putamen, na.rm=TRUE),
+                            "L Putamen volume low",
+                            "L Putamen volume high")
+bmi$leftputvolntile <- NA
+bmi$leftputvolntile[!is.na(bmi$Left.Putamen)] <-
+  ntile(bmi$Left.Putamen[!is.na(bmi$Left.Putamen)], n=4) 
+
+bmi$leftputvolntile <- factor(bmi$leftputvolntile, levels=c(4, 3, 2, 1))
+
+p6 <- ggplot(bmi %>% filter(leftputvolntile %in% c(1, 4)),
+             aes(x=beta, y=slope, col=as.factor(leftputvolntile))) +
+        #geom_point(size=4) +
+        geom_smooth(method="lm", se=FALSE, size=2) +
+        theme_gray(base_size=20) +
+        theme(
+          #legend.title=element_blank(),
+          axis.title=element_text(face="bold"),
+          legend.text=element_text(size=20),
+          legend.position="top",
+          legend.title=element_text(size=20, face="bold")
+        ) +
+        scale_color_manual(values=c("darkblue", "lightblue"),
+                           labels=c("high",
+                                    "low")) +
+        xlab(bquote(bold(`Fronto-striatal`~connectivity~(beta)))) +
+  ylab("Weight gain per day (lb)") +
+  guides(col=guide_legend("L Putamen volume"))
+
+ggsave(p6, filename="../output/figures/bmi_fig_interaction.pdf",
+       width=10.3, height=5.92)
+#-----------------------------------------------------------------------
+
+
+#p <- plot_grid(p0, p4, pn00, p5, p6, align="hv", axis="lgbt", 
+#               labels="AUTO", scale=0.9, label_size=35, ncol=3)
+
+#-----------------------------------------------------------------------
+gtmp <- empty_plot()
+pupp <- plot_grid(p0, p4, align="hv", ncol=2, scale=0.9,
+                  labels=c("a", "b"), label_size=35,
+                  axis="lgbt")
+plow <- plot_grid(pn00, p5, p6, align="hv", rel_widths=c(1, 1, 1),
+                  scale=0.9, labels=c("a", "b", "c"),
+                  label_size=35, nrow=1, axis="lgbt")
+
+#-----------------------------------------------------------------------
+# produce final graphs
+#-----------------------------------------------------------------------
+ggsave(plot=pupp, filename="../output/figures/bmi_freesurfer_vol.pdf",
+       width=17.8)
+
+ggsave(plot=plow, filename="../output/figures/bmi_freesurfer_conn.pdf",
+       width=17.8)
+#-----------------------------------------------------------------------
+dev.off()
+
+#summary(lm(bprs ~ icv + Left.Accumbens.area, data=bmi))
+#+END_SRC
+** Text                                                         :ignore:
+Patients and controls had similar weights and body mass indices (BMIs)
+at baseline (that were also within the normal range; Table
+[[tabsample]]). There was no evidence that the duration of untreated
+psychosis correlated with BMI ( src_R[:session]{parse_lm(lm8, 4, TRUE)}
+{{{results(\beta = -0.02\, /t/ (62) = -0.19\, /P/ = 0.854)}}}) or that
+prior exposure to antipsychotics (before entering the trial) was
+correlated with baseline BMI (src_R[:session]{parse_lm(lm10, 4, TRUE)}
+{{{results(\beta = 0.2\, /t/ (51) = 1.44\, /P/ =
+0.157)}}}). Furthermore, non drug-naive patients did not have a higher
+baseline BMI (src_R[:session]{parse_msd(bmi$bmi[bmi$mednaive=="no"])}
+{{{results(M = 23.74\, SD = 4.7)}}}) compared to healthy controls
+(src_R[:session]{parse_msd(hcm$bmi)} {{{results(M = 24.68\, SD =
+4.08)}}}). The left hippocampal volume was significantly reduced in
+patients compared to controls (Table [[tabsample]]), but no significant
+case-control differences were observed for any of the striatal regions.
+
+The left putamen volume predicted magnitude of weight gain
+(Fig. [[figvol]]a) in patients (src_R[:session]{parse_lm(lm1, index=7,
+scaled=TRUE)} {{{results(\beta = 0.31\, /t/ (68) = 2.18\, /P/ =
+0.033)}}}; Fig. [[figvol]]b), with larger baseline volumes associated
+with greater weight gain during the subsequent trial.
+
+Following up on the left putamen volume finding, we tested for
+functional resting-state connectivity [[cite:Sarpal2017]] between the
+left putamen and the whole brain that was associated with weight gain in
+src_R[:session]{nrow(betas)} {{{results(75)}}} patients. For the left
+dorsal rostral putamen, we found that decreased functional connectivity
+with the left medio-lateral frontal pole also predicted amount of weight
+gain (Fig. [[figconn]]a, b). Left putamen volume and fronto-striatal
+connectivity were not significantly correlated
+(src_R[:session]{parse_lm(lm2.0, 2, TRUE)} {{{results(\beta = -0.15\,
+/t/ (73) = -1.31\, /P/ = 0.194)}}}).
+
+Notably, the regression models were adjusted for age, sex, intracranial
+volume, baseline BMI, and duration of untreated psychosis; none of these
+variables showed a significant association with weight gain. In
+addition, to verify that the results were robust to the type of
+medication administered (risperidone vs. aripiprazole), we extended the
+models by including interactions of medication type and volume as well
+as medication type and connectivity, respectively, in the two regression
+models. There was no evidence for an effect of medication type on the
+weight gain and volume association (src_R[:session]{parse_lm(lm5, 10,
+scaled=TRUE)} {{{results(\beta = 0.01\, /t/ (66) = 0.11\, /P/ =
+0.916)}}}) or the weight gain and connectivity association
+(src_R[:session]{parse_lm(lm6, 4, scaled=TRUE)} {{{results(\beta =
+0.06\, /t/ (71) = 0.54\, /P/ = 0.593)}}}). In addition, no interactions
+with volume or connectivity were found for prior exposure to
+antipsychotics and medication dose during the trial.
+ 
+These results suggest that patients with higher striatal volume and more
+negative fronto-striatal connectivity gained more weight during the
+clinical trial. To investigate a potential synergistic effect of
+structure and function, we added functional connectivity indices as well
+as the functional connectivity by volume interaction to an extended
+regression model. This model allowed us to test whether striatal volume
+moderated the association between fronto-striatal connectivity and
+weight gain. Indeed, we found evidence for an interaction of volume and
+connectivity (src_R[:session]{parse_lm(lm2, index=10, scaled=TRUE)}
+{{{results(\beta = -0.38\, /t/ (65) = -3.37\, /P/ = 0.001)}}};
+Fig. [[figconn]]c), indicating that the negative relationship between
+fronto-striatal connectivity and weight gain was weaker with lower
+compared to higher striatal volumes. Note that this effect remained
+significant after excluding patients who had bipolar I disorder 
+and a recent manic episode with psychotic features 
+(/N/ = src_R[:session]{sum(bmi$bipolar, na.rm=TRUE)}); and after 
+adjusting the model for type of medication, medication
+dose during the trial, and prior exposure to antipsychotic
+drugs. However, since the functional connectivity measure that entered
+this model is not an independent measure of the effect size of the
+fronto-striatal connectivity[[cite:Kriegeskorte2009]], we also
+calculated a leave-one-out cross validation to derive an independent
+measure of the effect size of this interaction, and found that this
+effect remained significant (src_R[:session]{parse_r(r_partial_crossval,
+summary(lm2)$df[2]+2)} {{{results(/r/ (65) = 0.3\, /P/ = 0.013)}}}).
+
+* Introduction                                                  
+** Text                                                       :ignore:
+Weight gain is a major side effect of treatment with antipsychotic
+drugs, but relative amount of weight gain may vary considerably across
+patients treated with a given antipsychotic agent, especially in the
+first episode of illness[[cite:Correll2009]]. 
+
+While all antipsychotic drugs induce weight gain, some appear to induce
+more than others[[cite:Leucht2013a,Musil2015]], and reasons for
+differences between drugs and between patients are not fully
+understood[[cite:Kapur2016]]. Genetic variability
+[[cite:Malhotra2012,Brandl2015,Zhang2016a]] and lifestyle likely play a
+role, but structural and functional differences in the brain's
+dopaminergic reward system have not been fully understood. In addition
+to dopamine's function in food reward and in the control of food
+intake[[cite:Volkow2011]], dopamine is also a key factor in
+schizophrenia and in antipsychotic action, suggesting that one may
+expect baseline differences in striatal structure and function to
+account for the variability in antipsychotic-induced weight gain.
+
+The dorsal striatum, rich in dopamine D2 receptors which are antagonized
+by antipsychotic medications, plays a key role in the human reward
+system and in appetite regulation, suggesting that altered dopamine
+activity in the striatal reward circuitry may be responsible for
+increased food craving and resultant weight gain[[cite:Stice2010]]. In
+line with this notion, previous work has shown that decreased baseline
+functional activity in the putamen predicted amount of future
+antipsychotic weight gain[[cite:Nielsen2016]], and olanzapine-induced
+activity in the dorsal striatum was associated with excessive eating
+behavior[[cite:Mathews2012]]. Supporting the hypothesis of altered
+reward processing in schizophrenia, these results suggest that decreased
+reward anticipation in the putamen before antipsychotic treatment may
+predispose to weight gain under antipsychotic treatment. However, we are
+not aware of studies in weight gain using risperidone and aripiprazole,
+two widely used SGAs [[cite:Robinson2015]]. Furthermore, in addition to
+baseline function, variability in striatal structure and functional
+connectivity may also contribute to weight gain. Indeed, previous
+studies have shown higher striatal volumes in addictive
+behavior[[cite:Jacobsen2001,Ersche2011]] as well as weaker
+fronto-striatal connectivity in obesity[[cite:Kullmann2012]]. Thus, we
+measured striatal volume and striatal resting state functional
+connectivity in patients with early-phase psychosis at baseline, and
+weight gain over the course of 12 weeks of treatment with risperidone
+and aripiprazole, and hypothesized that higher striatal volume and lower
+cortico-striatal connectivity would be associated with more weight gain
+[[cite:Kullmann2012,Mole2016]].
+
+* Materials and Methods
+** Participants
+We used two early-phase schizophrenia cohorts from two separate 12-week
+clinical trials with a similar design and similar treatment
+effects. Details have been published previously[[cite:Sarpal2017]] and
+are summarized in Table [[tabsample]]. Written informed consent was
+obtained from adult participants and the legal guardians of participants
+younger than 18 years. All participants under the age of 18 provided
+written informed assent. The study was approved by the Institutional
+Review Board (IRB) of Northwell Health. We also included a sample of
+src_R[:session]{n_partic_hc} {{{results(77)}}} age-matched healthy
+controls (Table [[tabsample]]).
+
+** Weight assessments and analysis
+Weight measurements were completed at baseline, and then weekly for 4
+weeks, and every 2 weeks until week 12. To estimate the individual level
+of weight gain during this time frame, we used linear mixed models which
+allowed us to compute individual weight gain
+trajectories[[cite:Hedeker2006]]. Specifically, we used weight as the
+dependent variable and time (measured in days from baseline) as a
+continuous predictor, and included a random intercept as well as a
+random slope for day. The random slope for each participant is an index
+of the individual weight gain and was the measure of primary interest in
+this study. Random slopes were estimated using Restricted Maximum
+Likelihood (REML) and used as the dependent variables in our structural
+and functional imaging analysis (see below). All analyses were conducted
+in src_R[:session]{rvers} {{{results(R version 3.4.2 (2017-09-28))}}}.
+	Data and code of the current study are available online at
+http://github.com/philipphoman/bmi.
+
+** Structural imaging and analysis
+Magnetic resonance imaging exams were conducted on a 3-T scanner (GE
+Signa HDx). We acquired anatomical scans in the coronal plane using an
+inversion-recovery prepared 3D fast spoiled gradient (IR-FSPGR) sequence
+(TR = 7.5 ms, TE = 3 ms, TI = 650 ms, matrix = 256 $\times$ 256, FOV =
+240 mm) which produced 216 contiguous images (slice thickness = 1 mm)
+through the whole brain. After image processing and segmentation with
+Freesurfer 5.1.0, we measured the volumes of putamen and caudate and
+also included the hippocampus as control region.
+
+We then computed multivariable regressions for each region of interest,
+entering the individual weight gain slopes as the dependent variable and
+a predictor for subcortical volume. To adjust for unspecific
+confounders, we included additional variables in these models, namely
+age, sex, the age-by-sex interaction, baseline body mass index (BMI),
+duration of untreated psychosis (DUP), and total intracranial volume.
+
+** Functional imaging and analysis
+As described previously[[cite:Sarpal2017]], we obtained resting-state
+functional scans during a session of 5 min in duration. The resting
+state scan included 150 echo-planar imaging (EPI) volumes with a TR =
+2000 ms, TE = 30 ms, matrix = 64 $\times$ 64, FOV = 240 mm, slice
+thickness = 3 mm, and 40 continuous axial oblique slices (one voxel =
+3.75 $\times$ 3.75 $\times$ 3 mm). During resting state scanning,
+participants were asked to close their eyes and instructed not to think
+of anything in particular. We used FSL (http://www.fmrib.ox.ac.uk) for
+preprocessing of the resting-state scans. After discarding the first
+four EPI volumes, each participant's functional image was registered to
+a corresponding structural T1 image using a linear transformation with
+six degrees of freedom. This structural image was normalized by a
+12-parameter affine transformation to MNI-152 space. The combination of
+these transformations was then applied to each individual's functional
+dataset. Rigid body motion correction was performed with MCFLIRT and
+skull stripping was performed with BET.
+
+Images were spatially smoothed with a 5-mm FWHM Gaussian kernel. The
+resulting time series was then high pass filtered at 0.01 Hz. White
+matter (WM) and cerebrospinal fluid (CSF) masks were generated using
+FAST by segmentation of each individual's structural image. Mean signal
+within these masks was extracted. For removal of nuisance variables,
+each individual's 4D time series the data were regressed with eight
+predictors in a general linear model: WM, CSF, and six motion
+parameters. To avoid interference with our connectivity measures, the
+global mean was not included in this calculation.
+
+Since our structural analysis revealed a single region to be predictive
+of weight gain, i.e., the left putamen, we used this as a seed region in
+our functional connectivity analysis. Adopting the approach by Di
+Martino and colleagues[[cite:Martino2008]], 4 $\times$ 4 $\times$ 4 mm
+spheres were defined in the subregions of the left putamen, including
+the dorsal rostral putamen (x = -25, y = 8, z = 6), dorsal caudal
+putamen (x = -28, y = 1, z = 3), and ventral rostral putamen (x = -20, y
+= 12, z = -3). We computed correlation maps for each participant for all
+3 of our ROIs by extracting mean activity time courses from each seed
+region, and by calculating whole-brain voxel-wise correlation maps with
+the extracted waveform as a reference. The resulting correlation maps
+were /z/-transformed.
+
+Mean frame-wise displacement (FD) was calculated in FSL and was also
+included to control for the residual effect of head motion. Given that
+use of the data scrubbing to eliminate motion-related artifact offers
+little advantage over group-level corrections and can correct the data
+incompletely[[cite:Yan2013]], we accounted for head motion at the
+group-level by including mean FD as a nuisance
+covariate[[cite:Power2015,Yan2013]]. Group level analyses were performed
+independently for each ROI in FSL's FLAME. For each ROI, all maps were
+entered into a general linear model with age, sex, FD, and baseline BMI
+as covariates, and the individual weight gain slope as outcome
+measure. Significance was defined voxel-wise at /z/ > 3.1, with
+cluster correction at /P/ < 0.05. 
+
+* Discussion                                                  
+Here we showed that striatal volume and fronto-striatal connectivity
+predicted degree of weight gain associated with antipsychotic
+treatment. Lower connectivity between the left frontal pole and the left
+putamen was associated with more weight gain, and this relationship was
+stronger for higher compared to lower left putamen volume. In accordance
+with previous studies, we also found lower hippocampal volumes in
+patients compared to controls[[cite:Velakoulis1999,Narr2004,Steen2006]].
+
+We focused our study on the striatum, in line with this region's key
+role in reward processing and weight gain. Previous studies have shown
+that treatment with antipsychotics in healthy controls induced an
+increase in reward activation in the dorsal striatum that was correlated
+with excessive eating[[cite:Mathews2012]], and that attenuated reward
+anticipation normalizes under treatment with antipsychotics in patients
+with schizophrenia[[cite:Nielsen2012,Nielsen2012a]]. However, while
+altered reward processing is likely to play a role[[cite:Nielsen2016]],
+antipsychotics-induced weight gain is still a complex
+issue[[cite:Kapur2016]]. First, one could ask why patients did not gain
+weight before the antipsychotic treatment if baseline alterations in
+reward processing are the main cause for weight gain. Indeed, there is
+evidence suggesting that patients might show metabolic aberrations
+already before they start treatment, possibly due to unhealthy
+lifestyle, illness neurobiology, and genetic
+factors[[cite:Haupt2002,Thakore2002,Kohen2004,Elman2006]]. Furthermore,
+it is important to consider that some patients in the current study were
+not naive to antipsychotic drugs but had been exposed to antipsychotic
+treatment prior to inclusion. Thus, weight gain may have occurred during
+this time frame. Nevertheless, we did not find evidence that baseline
+BMI correlated with days of prior drug exposure or that non drug-naive
+patients had a higher baseline BMI compared to controls, speaking
+against substantial weight gain before the trial. The current trial of
+12 weeks, although short, thus appears long enough to induce substantial
+weight gain with considerable inter-subject variability, especially in
+subjects with minimal prior antipsychotic exposure
+[[cite:Correll2009]]. Second, one might ask how antipsychotics and some
+of their counterparts, dopaminergic agonists, can both induce weight
+gain, as shown for Parkinson disease[[cite:Nirenberg2006]]. A possible
+explanation is that weight gain in Parkinson disease is triggered mainly
+by compulsive eating [[cite:Nirenberg2006,Vikdahl2014]], whereas a
+decreased reward experience may be the main cause for weight gain
+induced by antipsychotics. It is also noteworthy that increased dopamine
+transmission through sympatomimetics such as amphetamine typically
+results in suppressed appetite.
+
+A probable mechanism for weight gain is thus via altered reward
+processing in the striatum. The striatum is part of the brain's reward
+circuitry which has well-known dopaminergic components as well as
+neurotransmitters including opioids, serotonin, and
+cannabinoids.[[cite:Mathews2012,Volkow2011,Cota2006,Small2003,Wise2006]]
+Compatible with this notion, food consumption increased striatal
+dopamine in a previous study using positron emission tomography (PET)
+and this increase was positively correlated with meal
+pleasantness[[cite:Small2003]]. In addition, food cues elicited dorsal
+striatum dopamine increase and this increase correlated with hunger
+perception and food desire[[cite:Volkow2002]]. In obesity, dopamine has
+also been implicated in food reward and the control of eating
+behavior[[cite:Volkow2007,Volkow2008,Volkow2005]]. More specifically,
+functional magnetic resonance imaging studies in obesity have found
+altered activation in dopaminergic reward-related areas. While these
+studies have described enhanced striatal activation in response to
+food-related
+cues[[cite:Rothemund2007,Stice2008a,Stice2008,Stoeckel2008]], the actual
+consumption of food elicited less activation in these
+areas[[cite:Stice2008a,Stice2008]]. As previously suggested
+[[cite:Mathews2012]], these patterns are consistent with an imbalance
+between (increased) reward expectation and (decreased) reward
+experience, most likely through dopaminergic disruptions. Overeating
+could then be seen as a compensation to obtain the anticipated
+exaggerated reward[[cite:Mathews2012]].
+
+Our study extends this model by considering the cortico-striatal
+functional connectivity which has been implicated in long term,
+inference-based decision making that can be biased by short-term reward
+experiences[[cite:Fischer2017]]. Accordingly, we found that the strength
+of this connectivity was correlated with less weight gain. Furthermore,
+we found that the association with weight gain was moderated by left
+putamen volume, with higher volumes together with lower connectivity
+predicting more weight gain. The moderating role of the putamen volume
+suggests a synergistic effect of striatal structure and function, with
+increased putamen volumes, possibly due to reduced endogenous dopamine
+availability in the striatum[[cite:Jacobsen2001,Ersche2011]],
+multiplying the effect of lower cortico-striatal connectivity on weight
+gain[[cite:Kullmann2012,Mole2016]].
+
+Some limitations merit comment. First, although the effect size of the
+striatal structure-function and weight gain relationship was medium (/r/
+= 0.3), these data may provide the first biomarker-based tool for
+identification of patients at very high risk for weight gain upon
+initiation of antipsychotic treatment. Furthermore, we used two
+different SGAs in this study, namely risperidone and aripiprazole. While
+it is important to underscore that all current antipsychotics share
+affinity for the dopamine D2 receptors, they may still differ from a
+pharmacological point of view. For example, risperidone and aripiprazole
+share D2 receptor antagonism to induce an antipsychotic
+effect[[cite:Meltzer2017]], but different receptor systems may be
+involved in side effects such as weight gain. Apart from the
+striatum[[cite:Nielsen2016]], weight gain has been associated with
+cortical 5-HT2A receptors in quetiapine
+monotherapy[[cite:Rasmussen2014]]. In addition, olanzapine exposure in
+healthy controls indicated negative effects on the peripheral
+metabolism. These findings suggest that antipsychotic induced weight
+gain may involve additional central and peripheral aspects apart from
+the striatum. However, in the current study we did not find evidence
+that the type of medication interacted with the effects of striatal
+volume or fronto-striatal connectivity, suggesting similar effects of
+both drugs, which is also consistent with our previous finding for a
+larger trial[[cite:Robinson2015]], where no significant differences on
+weight gain were found between aripiprazole and risperidone. In
+addition, weight gain differences between aripiprazole and risperidone
+found in previous studies might reflect a difference in the sedative
+effect, with risperidone causing more sedation than
+aripiprazole[[cite:Leucht2013a]].  Finally, future studies with repeated
+measurements of structural and functional imaging should investigate
+whether our findings reflect indeed a trait marker in patients prone to
+weight gain.
+
+In conclusion, the current study showed a synergistic effect of striatal
+structure and function on antipsychotics-induced weight gain. Lower
+fronto-striatal connectivity, implicated in unfavorable long-term
+decision making, was associated with more weight gain, and this
+relationship was stronger for higher compared to lower left putamen
+volumes. This suggests that an imaging marker at baseline may identify
+patients who are prone to substantial weight gain during treatment.
+
+\clearpage
+
+* Acknowledgments                                              
+Supported by NIMH grant P50MH080173 to Dr. Malhotra, grant R01MH060004
+to Dr. Robinson, grant R01MH076995 to Dr. Szeszko and R21MH101746 to
+Drs. Robinson and Szeszko. The authors thank Dr. Lauren Hanna and
+Dr. Juan Gallego for their careful clinical oversight of the study. They
+acknowledge their patients, their patients' families, and their
+psychiatry research support staff.
+
+* Conflict of Interest
+Dr. Robinson has been a consultant to Costello Medical Consulting,
+Innovative Science Solutions, Janssen, Lundbeck, Otsuka and US WorldMeds
+and has received research support from Otsuka. Dr. Malhotra has served
+as a consultant for Forum Pharmaceuticals and has served on a scientific
+advisory board for Genomind. Dr. Lencz is a consultant for Genomind. The
+other authors report no financial relationships with commercial
+interests.
+
+\clearpage
+
+* References                                                  :ignore:
+ \bibliographystyle{nature}
+ \bibliography{master}
+ \clearpage
+
+* Tables and Figures
+\singlespacing
+** Table. Sample                                              :ignore:
+*** Code                                             :noexport:ignore:
+#+NAME: srctabsample
+#+HEADER: :exports results 
+#+BEGIN_SRC R :results value :colnames yes :session :cache nil
+#lev <- c("Female", "Male", "Age", "BPRS", "DUP", "IQ", "MCCB")
+df_sum_stats <- function(df) { 
+  dfm <- df %>% gather(key=Characteristic, value=Value) %>%
+					group_by(Characteristic) %>%
+					dplyr::summarize(N=sum(!is.na(Value)),
+					                 Mean=round(mean(Value, na.rm=TRUE), 1),
+													 SD=round(sd(Value, na.rm=TRUE), 1),
+													 Min=round(min(Value, na.rm=TRUE), 1),
+													 Max=round(max(Value, na.rm=TRUE), 1)) 
+
+}
+
+#-----------------------------------------------------------------------
+# Summarize SZ
+#-----------------------------------------------------------------------
+ ch_of_interest <- c("age", "education", "weight", 
+                   "bmi",
+                   "bprs", "dup", "Left.Caudate", "Left.Hippocampus",
+                   "Left.Putamen", "Right.Caudate", "Right.Hippocampus",
+									 "Right.Putamen")
+
+                  
+bmim <- df_sum_stats(bmi %>% 
+     dplyr::select(ch_of_interest, -grid))
+
+
+# Summarize HC																							
+hcmb1 <- hcmb %>% mutate(bprs=NA, dup=NA)
+#hcmb1 <- hcmb
+hcmm1 <- df_sum_stats(hcmb1 %>% dplyr::select(-study, -group, -race, -icv,
+                                            -male, -female, -grid)) 
+hcmm1[3:4, 2] <- NA																				
+#hcmm$Characteristic <- c("Age", "Female", "Male")
+hmales <- data.frame(Characteristic="male", 
+                    N=sum(hcmb$male==1, na.rm=TRUE),
+                    Mean=NA, SD=NA, Min=NA, Max=NA)
+hfemales <- data.frame(Characteristic="female", 
+                    N=sum(hcmb$female==1, na.rm=TRUE),
+                    Mean=NA, SD=NA, Min=NA, Max=NA)
+
+hcmm <- rbind(hmales, hfemales, hcmm1) 
+
+males <- data.frame(Characteristic="male", N=sum(feffeo$sex==1),
+                    Mean=NA, SD=NA, Min=NA, Max=NA)
+females <- data.frame(Characteristic="female", N=sum(feffeo$sex==2),
+                    Mean=NA, SD=NA, Min=NA, Max=NA)
+fefeom <- rbind(males, females, bmim)
+
+
+# Add diagnosis
+
+#dx <- data.frame(Characteristic=c("Schizophrenia",
+#                                  "Schizophreniform disorder",
+#                                  "Psychotic disorder NOS",
+#                                  "Bipolar disorder PF"),
+#                 N=c(sum(bmi$schizophrenia, na.rm=TRUE),
+#                     sum(bmi$schizophreniform, na.rm=TRUE),
+#                     sum(bmi$psychotic_nos, na.rm=TRUE),
+#                     sum(bmi$bipolar, na.rm=TRUE)),
+#                 Mean=NA, SD=NA, Min=NA, Max=NA)
+							
+dxn <- data.frame(schiz=sum(bmi$schizophrenia, na.rm=TRUE),
+                 schizophreniform=sum(bmi$schizophreniform, na.rm=TRUE),
+                 psychotic=sum(bmi$psychotic_nos, na.rm=TRUE),
+                 schizoaff=sum(bmi$schizoaffective, na.rm=TRUE),
+                 bipolar=sum(bmi$bipolar, na.rm=TRUE),
+                 mednaive=sum(bmi$mednaive=="yes", na.rm=TRUE),
+                 med2weeks=sum(bmi$priordrugdays<=14, na.rm=TRUE),
+                 medprior=sum(!is.na(bmi$priordrugdays)))
+								 
+
+dxm <- data.frame(medpriorm=round(mean(bmi$priordrugdays, na.rm=TRUE), 1),
+                  medpriorsd=round(sd(bmi$priordrugdays, na.rm=TRUE), 1))
+
+dx <- dxn %>% gather(key=Characteristic, value=N, 
+                     schiz,
+                     schizophreniform,
+                     psychotic,
+                     schizoaff,
+                     bipolar,
+                     mednaive,
+                     med2weeks,
+                     medprior) %>%
+  mutate(Mean=NA, SD=NA, Min=NA, Max=NA)
+
+dx$Mean[dx$Characteristic=="medprior"] <- dxm$medpriorm
+dx$SD[dx$Characteristic=="medprior"] <- dxm$medpriorsd
+
+fefeom <- rbind(fefeom, dx)
+
+# apply sorting on characteristics
+ch_of_interest <- c("male", "female", "age", "schiz",
+                    "schizophreniform",
+                    "psychotic",
+                    "schizoaff", "bipolar",
+                    "medprior",
+                    "mednaive",
+                    "med2weeks",
+                    "education", "weight", "bmi", "bprs", "dup",
+                    "Left.Caudate", "Left.Hippocampus", "Left.Putamen",
+                    "Right.Caudate", "Right.Hippocampus",
+                    "Right.Putamen")
+
+# cbind sz and hc
+hcmm <- rbind(hcmm, dx %>% mutate(N=NA, Mean=NA, SD=NA, Min=NA, Max=NA))
+cc <- cbind(fefeom[, 1:4], hcmm[, 2:4])
+
+# Rename columns so that sorting with arrange() works 
+colnames(cc) <- c("Characteristic", "N", "Mean", "SD", "N2", "M2", "SD2") 
+cc$Characteristic <- factor(cc$Characteristic, levels=ch_of_interest)
+cc <- cc %>% arrange(Characteristic)
+
+
+ch <- c("Males", "Females", "Age, years", "Schizophrenia",
+        "Schizophreniform disorder", "Psychotic disorder NOS",
+        "Schizoaffective disorder", 
+        "Bipolar I disorder (with psychotic features)",
+        "Prior medication exposure",
+        "Medication naive", "Medication 2 weeks or less",
+        "Education, years", "Weight, lb",
+        "BMI", "BPRS total", "DUP, weeks", "L Caudate, mm^3",
+        "L Hippocampus, mm^3", "L Putamen, mm^3", "R Caudate, mm^3",
+        "R Hippocampus, mm^3", "R Putamen, mm^3")
+
+# Add column for stats
+cc$stats <- ""
+cc$stats[17:22] <- paste(as.character(tabvolhc$sig), 
+                        as.character(tabvols$sig), sep="")
+#cc$stats <- 
+#cc$stats[13] <- "b"
+
+colnames(cc) <- c("*Characteristic*", "*SZ*", "*Mean*", "*SD*", 
+                       "*HC*", "*Mean*", "*SD*", "")
+cc$"*Characteristic*" <- ch
+cc <- parse_table(cc)
+return(cc)
+#+END_SRC
+
+*** Table                                                       :ignore:
+#+CAPTION: *Sample characteristics*.
+#+CAPTION: /Abbreviations/: 
+#+CAPTION: a, significant difference between patients 
+#+CAPTION: and controls (/P/ < 0.05) after adjusting
+#+CAPTION: for age, sex, age-by-sex, body mass index
+#+CAPTION: and total intracranial volume;
+#+CAPTION: b, significant predictor of weight gain
+#+CAPTION: in schizophrenia (/P/ < 0.05);
+#+CAPTION: NOS, not otherwise specified;
+#+CAPTION: SZ, schizophrenia patients;
+#+CAPTION: HC, healthy controls;
+#+CAPTION: BPRS, Brief Psychiatric Rating Scale;
+#+CAPTION: BMI, body mass index;
+#+CAPTION: DUP, duration of untreated psychosis.
+#+ATTR_LATEX: :align lrrrrrrr
+#+NAME: tabsample
+#+RESULTS[60d2370e8374738b5f83f1d6182c9f8ebbf2de5b]: srctabsample
+
+\clearpage
+
+** Figure Fig Vol                                             :ignore:
+#+NAME: cropfigvol
+#+BEGIN_SRC sh :exports results :results silent
+# if [ ! -f ../output/figures/fe_freesurfer_graphsum-crop.pdf]; then 
+    pdfcrop ../output/figures/bmi_freesurfer_vol.pdf
+# fi 
+#+END_SRC
+#+CAPTION: *Striatal volume predicts weight gain*
+#+CAPTION: *in schizophrenia patients (/N/ = src_R[:session]{n_partic}).*
+#+CAPTION: *a.* *Weight increased significantly*
+#+CAPTION: *over the course of the trial.* Means 
+#+CAPTION: with 95% confidence intervals are shown.
+#+CAPTION: *b.* *Weight gain in patients was predicted*
+#+CAPTION: *specifically by the left putamen volume.*
+#+CAPTION: Standardized beta coefficients
+#+CAPTION: with 95% confidence intervals are shown.
+#+CAPTION: All models were adjusted for age, sex, age-by-sex,  
+#+CAPTIOn: duration of untreated psychosis, 
+#+CAPTION: intracranial volume, and body mass index, none of which
+#+CAPTION: were significant predictors of weight gain. 
+#+CAPTION: Error bars not touching the zero line indicate 
+#+CAPTION: significant effects (/P/ < 0.05).
+#+CAPTION: /Abbreviations/: Caud, caudate; Hipp, hippocampus; 
+#+CAPTION: Put, putamen; L, left, R, right. 
+#+NAME: figvol
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:bmi_freesurfer_vol-crop.pdf]]
+
+\clearpage
+
+** Figure Fig Conn                                              :ignore:
+#+NAME: cropfigconn
+#+BEGIN_SRC sh :exports results :results silent
+# if [ ! -f ../output/figures/fe_freesurfer_graphsum-crop.pdf]; then 
+    pdfcrop ../output/figures/bmi_freesurfer_conn.pdf
+# fi 
+#+END_SRC
+#+CAPTION: *Fronto-striatal connectivity and the*
+#+CAPTION: *interaction of striatal structure and function predict*
+#+CAPTION: *weight gain in early*
+#+CAPTION: *psychosis patients (/N/ = src_R[:session]{nrow(betas)} {{{results(75)}}}).*
+#+CAPTION: *a, b. Lower functional connectivity between the left*
+#+CAPTION: *putamen and the left frontal pole predicted weight gain.*
+#+CAPTION: Following up on the left putamen volume finding, we
+#+CAPTION: tested for functional connectivity between the 
+#+CAPTION: left putamen and the whole brain that was associated
+#+CAPTION: with weight gain.
+#+CAPTION: The left dorsal rostral putamen (green) was used as seed 
+#+CAPTION: region,
+#+CAPTION: and the left frontal pole (red) was the only connected region
+#+CAPTION: surviving a voxel level threshold of /z/ > 3.1 and a 
+#+CAPTION: cluster threshold of /P/ < 0.05. 
+#+CAPTION: *c.* *Interaction of striatal structure and function*
+#+CAPTION: *in predicting weight gain.* To illustrate the significant
+#+CAPTION: interaction between left putamen volume and connectivity,
+#+CAPTION: we plotted regression lines for weight gain and connectivity
+#+CAPTION: for the highest quartile (25%) of putamen volume and the 
+#+CAPTION: lowest quartile (25%) of putamen volume.
+#+NAME: figconn
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:bmi_freesurfer_conn-crop.pdf]]
+
+\clearpage
+
+
+
+

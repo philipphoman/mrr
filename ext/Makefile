@@ -1,14 +1,13 @@
-#-----------------------------------------------------------------
-# This is the Makefile for mrr
+# This is the Makefile
 #
-# 18/9/18, PH
-#-----------------------------------------------------------------
+# 10/12/17, PH
 
 # project name
-PROJ = mrr
+PROJ = fe
 
+#####################################
 # Usually no edits below this line
-#-----------------------------------------------------------------
+#####################################
 # Output directory
 OUTP = output
 
@@ -38,8 +37,16 @@ TMP = $(OUTP)/tmp
 # directory for additional pdf files
 LIB = lib
 
+# Filename for merged pdf figures
+PDFMERGEDFIG = $(OUTP)/tmp/Fig.pdf
+
 # Filename for manuscript
 MANUSCRIPT =$(SRC)/$(PROJ)_ms.pdf
+
+# Python directory
+PYTHONDIR = $(SRC)
+PYOUT = $(OUTP)/python
+PYINPUT = $(OUTP)/tables/*pyinput*
 
 # executables
 RCC = R CMD BATCH
@@ -62,7 +69,12 @@ MKDIRBIN = mkdir
 RFILES = $(SRC)/$(PROJ)_do.R \
 
 # list data files
-DATAFILES = $(DATA)/$(PROJ).csv \
+DATAFILES = $(DATA)/$(PROJ)_cidar.csv \
+            $(DATA)/$(PROJ)_omega3.csv 
+
+
+# list python files
+PYTHONFILES = $(wildcard $(PYTHONDIR)/$(PROJ)*.py)
 
 # list tex files
 #TEXFILES = $(wildcard $(SRC)/*.tex)
@@ -76,6 +88,13 @@ PDFLIB = $(wildcard $(LIB)/$(PROJ)*.*)
 
 # indicator files to show R file has been run
 ROUTFILES = $(RFILES:$(SRC)/%.R=$(ROUT)/%.Rout)
+
+# indicator for python files
+PYOUTFILES = $(PYTHONFILES:$(PYTHONDIR)/%.py=$(PYOUT)/%.pyout)
+
+# replace Rout with pdf to get figure files
+#PDFFIGS = $(wildcard $(FIGS)/*.pdf)
+PDFFIGS = $(FIGS)/$(PROJ)_plots.pdf $(FIGS)/$(PROJ)_sim.pdf
 
 # indicator files to show tex has run
 TEXOUTFILES = $(TEXFILES:$(SRC)/%.tex=$(SRC)/%.aux)
@@ -92,6 +111,11 @@ $(ROUT)/%.Rout: $(SRC)/%.R $(DATAFILES) \
   #cd $(SRC) && $(RCC) $(notdir $<) ../$(ROUT)/$*.Rout 
 	echo "Running $(notdir $<), this may take a while ..." \
 	&& cd $(SRC) && $(RCC) $(notdir $<) 
+
+# Python dependencies
+$(PYOUT)/%.pyout: $(PYTHONDIR)/%.py $(PYINPUT) 
+	echo "Creating python figures ..." \
+	&& cd $(PYTHONDIR) && $(PYTHONBIN) $(notdir $<);
 
 # Rule for $(TEXFILES)
 # Convert every org file to LaTeX this is done from within the subfolder
@@ -117,23 +141,28 @@ $(SRC)/%.aux: $(SRC)/%.tex $(ROUTFILES) $(PDFLIB)
 	cd $(SRC) && $(TEX) $(notdir $<)
 	cd $(SRC) && $(TEX) $(notdir $<) 
 
+
+
 # Default entry
 all: figures manuscript
 
+$(PDFMERGEDFIG): $(ROUTFILES)
+	$(PDFMERGEBIN) $(PDFMERGEDFIG) $(wildcard $(FIGS)/$(PROJ)*.pdf)
+
 # make manuscript
-manuscript: figures tex manuscriptview
+manuscript: figures tex
 
 # make figures
 figures: analysis 
 
-# make tex output
+# run tex files
 tex: analysis $(TEXOUTFILES) $(TEXFILES) 
 
-# make R output
+# run R files
 analysis: $(ROUTFILES)
 
-manuscriptview: manuscript
-	$(VIEWBIN) $(MANUSCRIPT)
+# run python script
+python: $(PYOUTFILES) 
 
 # simulate that R analyses had been done
 Rdone:
