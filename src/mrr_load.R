@@ -10,3 +10,4 @@
 source("mrr_func.R")
 
 # code goes here
+dat <- read.csv("../data/mrr.csv")

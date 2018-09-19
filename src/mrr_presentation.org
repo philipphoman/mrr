@@ -31,8 +31,7 @@
 #+LATEX_HEADER: \usepackage{eurosym}
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{textcomp}
-#+LATEX_HEADER: \graphicspath{{../../../output/figures/}{../../../ext/logos/}}
-# LATEX_HEADER: \graphicspath{{../../../ext/logos/}}
+#+LATEX_HEADER: \graphicspath{{../output/figures/}{../ext/logos/}{../lib/}}
 # ----------------------------------------------------------------------
 ** Latex macros                                               :ignore:
 # ----------------------------------------------------------------------
@@ -47,16 +46,11 @@
 # ----------------------------------------------------------------------
 ** Authors and affiliations                                     :ignore:
 # ----------------------------------------------------------------------
-#+LATEX_HEADER: \author{Philipp Homan\inst{1,2,3}, MD, PhD}
-#+LATEX_HEADER: \institute[shortinst]{\inst{1} Donald and  
-#+LATEX_HEADER: Barbara Zucker School of Medicine 
-#+LATEX_HEADER: at Northwell/Hofstra, NY, USA
-#+LATEX_HEADER: \and \inst{2} Feinstein Institute for Medical 
-#+LATEX_HEADER: Research, Manhasset, NY, USA \and
-#+LATEX_HEADER: \inst{3} Zucker Hillside Hospital, NY, USA\\ 
+#+LATEX_HEADER: \author{Philipp Homan, MD, PhD}
+#+LATEX_HEADER: \institute[shortinst]{ 
 #+LATEX_HEADER: \footnotesize\vspace{5mm}
 #+LATEX_HEADER: \url{phoman1@northwell.edu}\\
-#+LATEX_HEADER: \url{http://github.com/philipphoman}}
+#+LATEX_HEADER: \url{http://github.com/philipphoman/mrr}}
 # ----------------------------------------------------------------------
 
 ** Buffer-wide source code blocks                             :ignore:
@@ -112,7 +106,7 @@
 
 ;(setq org-latex-pdf-process '("latexmk -pdf 
 ;	-pdflatex='xelatex -shell-escape -interaction nonstopmode' -bibtex -f %f "))
-;(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -8bit -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
+(setq org-latex-pdf-process '("latexmk -pdflatex='xelatex -8bit -interaction nonstopmode' -shell-escape -pdf -bibtex -f %f"))
 
 (setq org-latex-logfiles-extensions 
 	 (quote("bcf" "blg" "fdb_latexmk" "fls" 
@@ -179,10 +173,6 @@
 				(R-mode "R"))))
 (setq org-latex-minted-options
 '(("linenos=true") ("bgcolor=lightgray") ("tabsize=2")))
-
-
-
-
 #+END_SRC
 # ----------------------------------------------------------------------
 # End preamble
@@ -200,10 +190,14 @@
 #-----------------------------------------------------------------------
 source("mrr_load.R")
 #+END_SRC
+\center
+\Huge
+It's not reproducible \\ 
+if it only runs on your laptop!
 
-It's not reproducible if it only runs on your laptop!
-
-(http://www.jonzelner.net/docker/reproducibility/)
+\vspace{4mm}
+\tiny
+http://www.jonzelner.net/docker/reproducibility/)
 
 * We are faced with a replication crisis
 ** Left
@@ -211,8 +205,8 @@ It's not reproducible if it only runs on your laptop!
 :BEAMER_col: 0.5 
 :BEAMER_opt: [t]
 :END:
-#+ATTR_LATEX: :width 0.8\textwidth
-[[file:mrr_occ2015.pdf]]
+#+ATTR_LATEX: :width 0.5\textwidth
+[[file:mrr_osc2015.pdf]]
 \center
 \tiny
 Open Science Collaboration 2015, Science
@@ -243,8 +237,8 @@ Ioannidis 2005, PLOS Med
 :BEAMER_opt: [t]
 :END:
 
-#+ATTR_LATEX: :width 0.8\textwidth
-[[file:mrr_economist2015.pdf]]
+#+ATTR_LATEX: :width 0.6\textwidth
+[[file:mrr_economist2013.pdf]]
 \center
 \tiny
 
@@ -261,7 +255,29 @@ Ioannidis 2005, PLOS Med
 Baker 2016, Nature
 
 * Why is it so hard to reproduce our own work?
-We don't use standardized work flows
+* Why is it so hard to reproduce our own work?
+\center
+\Huge
+We don't use \\
+standardized work flows
+
+* What does that mean?
+- We use intuition when we organize data, manuscripts, code
+- The same goes for analyzing data
+- After a couple of months (sometimes weeks) it is hard to remember:
+
+* What does that mean?
+- We use intuition when we organize data, manuscripts, code
+- The same goes for analyzing data
+- After a couple of months (sometimes weeks) it is hard to remember:
+  1. What we did
+
+* What does that mean?
+- We use intuition when we organize data, manuscripts, code
+- The same goes for analyzing data
+- After a couple of months (sometimes weeks) it is hard to remember:
+  1. What we did
+	2. Why we did it
 
 * What does that mean?
 - We use intuition when we organize data, manuscripts, code
@@ -272,20 +288,31 @@ We don't use standardized work flows
 	3. How we did it
 
 * What can we do about it?
-Three rules:
-- Separate data from analysis
-- Use version control
-- Use code to analyze data (not GUIs)
+Three simple rules:
 	
-
 * What can we do about it?
-Three rules:
-- *Separate data from analysis*
-- Use version control
-- Use code to analyze data (not GUIs)
+Three simple rules:
+1. Separate data from analysis
+	
+* What can we do about it?
+Three simple rules:
+1. Separate data from analysis
+2. Use version control
+	
+* What can we do about it?
+Three simple rules:
+1. Separate data from analysis
+2. Use version control
+3. Use code to analyze data (not GUIs)
+	
+* What can we do about it?
+Three simple rules:
+1. *Separate data from analysis*
+2. Use version control
+3. Use code to analyze data (not GUIs)
 	
 * Separating data from analysis
-#+ATTR_LATEX: :width 0.8\textwidth 
+#+ATTR_LATEX: :width 0.6\textwidth 
 [[file:mrr_example2018.pdf]]
 
 * Separating data from analysis
@@ -295,7 +322,23 @@ Three rules:
 :BEAMER_opt: [t]
 :END:
 
-#+ATTR_LATEX: :width 1.0\textwidth 
+#+ATTR_LATEX: :width 0.7\textwidth 
+[[file:mrr_example2018a.pdf]]
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+	
+* Separating data from analysis
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+#+ATTR_LATEX: :width 0.7\textwidth 
 [[file:mrr_example2018a.pdf]]
 
 ** Right
@@ -308,9 +351,15 @@ Three rules:
 - Once finalized (cleaned etc.), it is never touched again
 - Any analysis reads from but never writes to this data set
 	
+* What can we do about it?
+Three simple rules:
+1. Separate data from analysis
+2. *Use version control*
+3. Use code to analyze data (not GUIs)
+	
 * Use a version control system (= use git)
 
-#+ATTR_LATEX: :width 1.0\textwidth 
+#+ATTR_LATEX: :width 0.7\textwidth 
 [[file:mrr_example2018b.pdf]]
 \center
 \tiny
@@ -329,32 +378,40 @@ https://www.quora.com/
 - Downside: it works best with text
 
 ** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
 
-#+ATTR_LATEX: :width 1.0\textwidth 
-[[file:mrr_example2018b.pdf]]
+#+ATTR_LATEX: :width 0.8\textwidth 
+[[file:mrr_example2018c.pdf]]
 
 * Example: git
-	
 * What can we do about it?
-Three rules:
-- Separate data from analysis
-- Use version control
-- *Use code to analyze data (not GUIs)*
+Three simple rules:
+1. Separate data from analysis
+2. Use version control
+3. *Use code to analyze data (not GUIs)*
 	
+* Why code?
+
+#+ATTR_LATEX: :width 1.0\textwidth 
+[[file:mrr_example2018d.pdf]]
+
 * Why code?
 ** Left
 :PROPERTIES: 
 :BEAMER_col: 0.4 
-:BEAMER_opt: [t]
+:BEAMER_opt: [T]
 :END:
-- To keep track of the workflow
+- *To keep track of the workflow*
 - To make the analysis transparent
+- To improve your skills and get more efficient as you code
 
 ** Right
 :PROPERTIES:
 :BEAMER_col: 0.6 
 :BEAMER_opt: [T]
-:BEAMER_env: block
 :END:
 
 *** Block
@@ -362,7 +419,11 @@ Three rules:
 #+NAME: code1
 #+BEGIN_SRC R :session :exports code :results silent
 parse_msd <- function(m, sd) {
-  # produce string of mean and sd 
+  #
+  # this function will  
+  # produce a nicely formatted string of
+  # mean and sd to be used inline in text
+  #
   print(paste("M = ", round(m, 2),
               ", SD = ", round(sd, 2),
               sep=""))
@@ -370,199 +431,136 @@ parse_msd <- function(m, sd) {
 #+END_SRC
 \normalsize
 
+* Without code your analysis won't be reproducible
+Options:
+- R or RStudio (it's free!), ideally also Python (it's free!)
+- Alternatively, Matlab (great, but commercial)
+- SAS (has been the market leader in commercial analytics, and it does
+  include a free University Edition now)
 
-* Making research reproducible
-** Left
-:PROPERTIES: 
-:BEAMER_col: 0.5 
-:BEAMER_opt: [t]
-:END:
+* Without code your analysis won't be reproducible
+Options:
+- *R or R studio (it's free!), ideally also Python (it's free!)*
+- Alternatively, Matlab (great, but commercial)
+- SAS (has been the market leader in commercial analytics, and it does
+  include a free University Edition now)
 
-#+ATTR_LATEX: :width 1.0\textwidth 
-[[file:fe_iw2018_senn2003.pdf]]
-
-** Right
-:PROPERTIES: 
-:BEAMER_col: 0.5 
-:BEAMER_opt: [t]
-:END:
-
-#+ATTR_LATEX: :width 0.3\textwidth 
-[[file:fe_iw2018_senn2003a.pdf]]
-
-* Essential ingredients
-- Mister K., 24 year old car mechanic from Nassau County, NY
-- Psychotic symptoms with delusions and suspiciousness
-- Duration of untreated psychosis: about 1 year 
-- 07.01.2014: Admission to psychiatric hospital
-
-* A modularized approach
-Question: which medication is likely to work?
-
-* Version control
-** Left                                                         :BMCOL:
+* Example: R
+** LeftRight
 :PROPERTIES:
-:BEAMER_col: 0.5
-:BEAMER_opt: 
+:BEAMER_col: 1.0
+:BEAMER_opt: [T]
+:BEAMER_env: block
 :END:
-#+ATTR_LATEX: :width 1.0\textwidth
-[[file:fe_iw2018_festudy_grid9333.pdf]]
 
-** Right                                                        :BMCOL:
-:PROPERTIES:
-:BEAMER_col: 0.5
-:END:
-- Trajectory of a 12 week treatment 
-- Medication: risperidone 1-6 mg 
-	
-* Code-based instead of GUI-based stats
-- Mister L., *1991, high school graduate from Queens, NYC
-- Paranoid ideas  
-- Untreated psychosis for about 4 years 
-- 23.08.2011: Admission
-	
-* Another vignette
-** Left                                                         :BMCOL:
-:PROPERTIES:
-:BEAMER_col: 0.5
-:END:
-#+ATTR_LATEX: :width 1.0\textwidth
-[[file:fe_iw2018_festudy_grid9618.pdf]]
-
-** Right                                                        :BMCOL:
-:PROPERTIES:
-:BEAMER_col: 0.5
-:END:
-- Trajectory of a 12 week treatment 
-- Medication: Aripiprazole 5-15 mg 
-	
-* Using markup to write text and code 
-What do we learn from the two clinical vignettes?
-
-* Using Make to build whole projects 
-- Mister K. responded to the treatment, Mister L. didn't?
-- Risperidone was helpful, aripiprazole wasn't?
-
-* Outline
-** Left
-:PROPERTIES: 
-:BEAMER_col: 0.5 
-:BEAMER_opt: [t]
-:END:
-Complexity of the human brain
-
-#+ATTR_LATEX: :width 0.8\textwidth
-[[file:fe_iw2018_bassett2015a.pdf]]
-# [[file:fe_grid9333.pdf]]
-\center
+*** Block
 \tiny
-Image credit: Dani Bassett, PhD, U Penn
+#+NAME: code1
+#+BEGIN_SRC R :session :exports code :results silent
+#-----------------------------------------------------------------------
+# This is a simple R program
+# 9/18/18, PH
+#-----------------------------------------------------------------------
+#
+# 1. Load and visualize data
+#-----------------------------------------------------------------------
+dat <- read.csv("../data/mrr.csv")
+
+# Histogramms
+hist(dat$y[dat$group=="X"], col="blue")
+hist(dat$y[dat$group=="Y"], col="blue")
+
+# 2. Compute linear model, adjusted for  age
+#-----------------------------------------------------------------------
+lmfit <- lm(y ~ group + age, data=dat)
+
+# 3. Visualize residuals to check model assumptions
+#-----------------------------------------------------------------------
+plot(density(resid(lmfit)))
+
+# 4. Print coefficients
+#-----------------------------------------------------------------------
+summary(lmfit)
+#+END_SRC
+\normalsize
+
+* Coding: the good news
+- It is easier than you think
+- It actually teaches you how to think
+- It will be (fairly) easy to learn another one
+
+* Summary: How to make research reproducible
+Essential:
+1. Separate data and analysis
+2. Use git to keep track of changes
+3. Use R to keep track of your workflow
+
+Optional:
+4. *Combine coding and writing to produce manuscripts*
+5. Use Make to build your project 
+
+* Combining coding and writing
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
+Several Options:
+- knitr (RStudio)
+- *org-mode*
+- sweave
 
 ** Right
 :PROPERTIES: 
 :BEAMER_col: 0.5 
 :BEAMER_opt: [t]
 :END:
-Complexity of treatment response
 
-#+ATTR_LATEX: :width 0.8\textwidth 
-[[file:fe_iw2018_nature2014.pdf]]
+#+ATTR_LATEX: :width 1.0\textwidth
+[[file:mrr_example2018e.pdf]]
+
+* Example: org-mode
+
+* Summary: How to make research reproducible
+Essential:
+1. Separate data and analysis
+2. Use git to keep track of changes
+3. Use R to keep track of your workflow
+
+Optional:
+4. Combine coding and writing to produce manuscripts
+5. *Use Make to build your project* 
+
+* Example: Makefile
 
 * Conclusion
-- We need to be careful with dichotomizing patients
-- Put enough effort in modeling response
-- Partial pooling to exploit full information and apply shrinkage
-* Outlook
-\usebeamerfont{acknowledgments}
-** Left
-:PROPERTIES: 
-:BEAMER_col: 0.5 
-:BEAMER_opt: [t]
-:END:
-Real-world indiv. differences in treatment outcome:
-- Nation-wide electronic database from Finland 
--	All individuals 16 to 64 years in 2006 who received a diagnosis of
-  schizophrenia during a period of 8 years (prevalent cohort)
-- Repeated episodes on and off drugs
-- Collaboration with Karolinska Inst. (Jari Tiihonen)
-
-** Right 
-:PROPERTIES: 
-:BEAMER_col: 0.5 
-:BEAMER_opt: [t]
-:END:
-Relapse prevention through digital health assistance:
-- Multi-site study (10 centers, 342 patients)
-- Technology-enhanced relapse prevention: Smartphone Intervention,
-  Computerized CBT, Daily Support Website, Prescriber Decision Support
-  System
-- Results: Reduction of 4 days in re-hosp. compared to standard care
-  (Homan, ..., Ben-Zeev, Robinson, Kane, in prep)
+- We need transparent and reproducible workflows
+- Efficient way to improve analyses and writing
+- Sharing data, code, workflows may become a requirement
 
 * Acknowledgments
 # \footnotesize
+** Left
+:PROPERTIES: 
+:BEAMER_col: 0.5 
+:BEAMER_opt: [t]
+:END:
+
 \usebeamerfont{acknowledgments}
 \singlespacing
-** Left
-:PROPERTIES:
-:BEAMER_col: 0.5
+- Joe Zellner (jonzelner.net/docker/reproducibility/)
+- Andrew Gelman (andrewgelman.com)
+- Papaja package in R (crsh.github.io/papaja_man/)
+
+** Right
+:PROPERTIES: 
+:BEAMER_col: 0.5 
 :BEAMER_opt: [t]
 :END:
-*Mount Sinai School of Medicine* \\
--Daniela Schiller \\
--Roger Clem \\
 
-\vspace{2mm}
-
-*Feinstein Institute and Zucker Hillside Hospital* \\
--Stephanie Winkelbeiner \\
--Anil Malhotra \\
--Delbert Robinson \\
--John Kane \\
-
-\vspace{2mm}
-
-*University of Berne* \\
--Werner Strik \\
--Thomas Dierks \\
-
-\vspace{2mm}
-
-*Karolinska Institutet* \\
--Jari Tiihonen \\
-
-\vspace{2mm}
-
-** Right 
-:PROPERTIES:
-:BEAMER_col: 0.5
-:BEAMER_opt: [t]
-:END:
-*University of Melbourne* \\
--Marialuisa Cavelti \\
-
-\vspace{2mm}
-
-*University of Edinburgh* \\
--David Carmel \\
-
-\vspace{2mm}
-
-*TU Munich* \\
--Stefan Leucht \\
-
-\vspace{2mm}
-
-*Yale University* \\
--Ifat Levy \\
--Ilan Harpaz-Rotem \\
--John Krystal \\
-
-\vspace{2mm}
-
-*NYU* \\
--Candace Raio \\
--Yaacov Trope \\
+#+ATTR_LATEX: :width 0.9\textwidth 
+[[file:mrr_example2018f.pdf]]
 
 * References                                                    :ignore:
 \bibliographystyle{npp}

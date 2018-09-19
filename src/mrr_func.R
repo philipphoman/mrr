@@ -15,6 +15,7 @@ pacman::p_load(
           "tidyverse",
           "png",
           "grid",
+          "readxl",
           "QuantPsyc",
           "cowplot",
           "R.matlab",
