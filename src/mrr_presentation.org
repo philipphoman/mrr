@@ -239,16 +239,6 @@ Ioannidis 2005, PLOS Med
 We are probably also faced \\
 with a reproducibility crisis
 
-* Replicating vs. reproducing 
-- Replicating: People going out and collecting new data
-- Reproducing: People analyzing the same data
-- What cannot be replicated often difficult to reproduce
-	
-\vspace{6mm}
-\center
-\tiny
-jblevins.org/log/rep
-
 * We are probably also faced with a reproducibility crisis 
 ** Left
 :PROPERTIES: 
@@ -273,11 +263,21 @@ jblevins.org/log/rep
 \tiny
 Baker 2016, Nature
 
+* Replicating vs. reproducing 
+- Replicating: People going out and collecting new data
+- Reproducing: People analyzing the same data
+- What cannot be replicated often difficult to reproduce
+	
+\vspace{6mm}
+\center
+\tiny
+jblevins.org/log/rep
+
 * What makes it hard to reproduce our own work?
 * What makes it hard to reproduce our own work?
 \center
 \Huge
-When we don't use \\
+We don't always use \\
 reproducible work flows
 
 * What does that mean?
