@@ -198,7 +198,7 @@ if it only runs on your laptop!
 
 \vspace{4mm}
 \tiny
-http://www.jonzelner.net/docker/reproducibility/)
+http://www.jonzelner.net/docker/reproducibility/
 
 * We are faced with a replication crisis
 #+ATTR_LATEX: :width 0.6\textwidth
@@ -232,8 +232,8 @@ Open Science Collaboration 2015, Science
 \tiny
 Ioannidis 2005, PLOS Med
 
-* As if this wasn't bad enough
-* As if this wasn't bad enough
+* In addition
+* In addition
 \center
 \Huge 
 We are probably also faced \\
@@ -273,33 +273,33 @@ jblevins.org/log/rep
 \tiny
 Baker 2016, Nature
 
-* Why is it so hard to reproduce our own work?
-* Why is it so hard to reproduce our own work?
+* What makes it hard to reproduce our own work?
+* What makes it hard to reproduce our own work?
 \center
 \Huge
-We don't use \\
-standardized work flows
+When we don't use \\
+reproducible work flows
 
 * What does that mean?
-- We use intuition when we organize data, manuscripts, code
+- Using just intuition when organizing data, manuscripts, code
 - The same goes for analyzing data
 - After a couple of months (sometimes weeks) it is hard to remember:
 
 * What does that mean?
-- We use intuition when we organize data, manuscripts, code
+- Using just intuition when organizing data, manuscripts, code
 - The same goes for analyzing data
 - After a couple of months (sometimes weeks) it is hard to remember:
   1. What we did
 
 * What does that mean?
-- We use intuition when we organize data, manuscripts, code
+- Using just intuition when organizing data, manuscripts, code
 - The same goes for analyzing data
 - After a couple of months (sometimes weeks) it is hard to remember:
   1. What we did
 	2. Why we did it
 
 * What does that mean?
-- We use intuition when we organize data, manuscripts, code
+- Using just intuition when organizing data, manuscripts, code
 - The same goes for analyzing data
 - After a couple of months (sometimes weeks) it is hard to remember:
   1. What we did
@@ -509,8 +509,17 @@ summary(lmfit)
 
 * Coding: the good news
 - It is easier than you think
-- It actually teaches you how to think
-- It will be (fairly) easy to learn another one
+- Once one language is learned, it's easy to learn another one
+
+* Summary: How to make research reproducible
+Essential:
+1. Separate data and analysis
+2. Use git to keep track of changes
+3. Use R to keep track of your workflow
+
+Optional:
+4. Combine coding and writing to produce manuscripts
+5. Use Make to build your project 
 
 * Summary: How to make research reproducible
 Essential:
